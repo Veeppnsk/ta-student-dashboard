@@ -437,15 +437,11 @@
           <hr style="border:none;border-top:1px solid var(--line);margin:6px 0" />
           <div class="token-grid">
             <div>
-              <label for="packageBaseUrlEntry">Token Package Base URL (Optional)</label>
-              <input id="packageBaseUrlEntry" type="text" placeholder="https://example.com/split_students_YYYYMMDD_HHMMSS/token_packages" autocomplete="off" />
-            </div>
-            <div>
-              <label for="tokenEntry">Access Token</label>
+              <label for="tokenEntry">Access Token (Optional)</label>
               <input id="tokenEntry" type="text" placeholder="Paste your access token" autocomplete="off" />
             </div>
             <button id="loadByTokenBtn" type="button">Load By Token</button>
-            <div id="tokenLoadStatus" class="token-status">Optional online mode: use your instructor-provided token package link.</div>
+            <div id="tokenLoadStatus" class="token-status">Enter your access token to load your data online.</div>
           </div>
         </div>
         <div class="gate-help">Tip: If the CSV uses names instead of IDs, type the exact student name used in the export. Token mode only loads your package when your token is valid.</div>
@@ -622,10 +618,10 @@
     const dashboardShell = document.getElementById("dashboardShell");
     const studentIdEntry = document.getElementById("studentIdEntry");
     const unlockBtn = document.getElementById("unlockBtn");
-    const packageBaseUrlEntry = document.getElementById("packageBaseUrlEntry");
     const tokenEntry = document.getElementById("tokenEntry");
     const loadByTokenBtn = document.getElementById("loadByTokenBtn");
     const tokenLoadStatus = document.getElementById("tokenLoadStatus");
+    const TOKEN_PACKAGE_BASE_URL = "https://veeppnsk.github.io/ta-student-dashboard/split_students_20260617_161619/token_packages";
     const changeStudentBtn = document.getElementById("changeStudentBtn");
     const activeStudentLabel = document.getElementById("activeStudentLabel");
     const csvFile = document.getElementById("csvFile");
@@ -726,14 +722,13 @@
     }
 
     async function loadTokenPackage() {
-      const baseUrl = normalizeText(packageBaseUrlEntry && packageBaseUrlEntry.value);
       const token = normalizeText(tokenEntry && tokenEntry.value);
-      if (!baseUrl || !token) {
-        setTokenStatus("Token mode requires both package base URL and access token.", true);
+      if (!token) {
+        setTokenStatus("Please enter an access token.", true);
         return;
       }
 
-      const manifestUrl = buildManifestUrl(baseUrl, token);
+      const manifestUrl = buildManifestUrl(TOKEN_PACKAGE_BASE_URL, token);
       setTokenStatus("Loading token package...", false);
 
       try {
@@ -792,10 +787,8 @@
     async function tryLoadFromQueryToken() {
       const params = getQueryParams();
       const token = normalizeText(params.get("token"));
-      const baseUrl = normalizeText(params.get("base"));
-      if (!token || !baseUrl) return;
+      if (!token) return;
       if (tokenEntry) tokenEntry.value = token;
-      if (packageBaseUrlEntry) packageBaseUrlEntry.value = baseUrl;
       await loadTokenPackage();
     }
 
