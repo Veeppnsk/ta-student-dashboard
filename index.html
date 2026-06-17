@@ -1,0 +1,2376 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TA Student Offline Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f2ea;
+      --card: #fffdf8;
+      --ink: #232019;
+      --muted: #6b6356;
+      --accent: #1f6f78;
+      --accent-2: #d96f32;
+      --line: #e4dbc9;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background:
+        radial-gradient(circle at 15% 0%, #efe4cf 0, transparent 40%),
+        radial-gradient(circle at 90% 10%, #dbe8e0 0, transparent 35%),
+        var(--bg);
+      color: var(--ink);
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .gate {
+      min-height: calc(100vh - 48px);
+      display: grid;
+      place-items: center;
+    }
+
+    .gate-card {
+      width: min(100%, 520px);
+      padding: 28px;
+    }
+
+    .gate-card h1 {
+      margin: 0 0 10px;
+      font-size: 32px;
+      letter-spacing: 0.4px;
+    }
+
+    .gate-card p {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .gate-actions {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .gate-help {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .token-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .token-status {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .dashboard-hidden {
+      display: none;
+    }
+
+    .student-banner {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-top: 12px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.65);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .student-banner strong {
+      color: var(--ink);
+    }
+
+    .student-banner button {
+      width: auto;
+      padding: 8px 12px;
+      flex: 0 0 auto;
+    }
+
+    .header {
+      margin-bottom: 16px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: 0.4px;
+    }
+
+    .header p {
+      margin: 8px 0 0;
+      color: var(--muted);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 4px 16px rgba(35, 32, 25, 0.06);
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input[type="file"],
+    select,
+    button {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+    }
+
+    button {
+      cursor: pointer;
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    button:hover {
+      filter: brightness(1.05);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(280px, 1fr));
+      gap: 14px;
+    }
+
+    .chart-card h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .chart-box {
+      height: 320px;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .kpi {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .kpi .label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .kpi .value {
+      margin-top: 6px;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .kpi.avg-card {
+      border-color: var(--accent);
+      background: #eef7f8;
+    }
+
+    .kpi.assignment-card {
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+    }
+
+    .kpi.assignment-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(35, 32, 25, 0.1);
+    }
+
+    .kpi.assignment-card.selected {
+      border-color: var(--accent);
+      background: #eef7f8;
+      box-shadow: 0 0 0 2px rgba(31, 111, 120, 0.15);
+    }
+
+    .hint {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* ── Issues-by-file table ── */
+    .file-table-wrap {
+      overflow-x: auto;
+      margin-top: 14px;
+    }
+    .file-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .file-table th {
+      background: var(--accent);
+      color: #fff;
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 600;
+      white-space: nowrap;
+      position: relative;
+    }
+    .file-table td {
+      padding: 7px 12px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+    }
+    .file-table tr:nth-child(even) td {
+      background: #f9f6ef;
+    }
+    .file-table tr:hover td {
+      background: #eef7f8;
+    }
+    .open-btn {
+      display: inline-block;
+      padding: 4px 10px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: filter 0.15s;
+    }
+    .open-btn:hover { filter: brightness(1.1); }
+    .copy-btn {
+      display: inline-block;
+      padding: 4px 10px;
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-left: 4px;
+      white-space: nowrap;
+      width: auto;
+      transition: background 0.15s, color 0.15s;
+    }
+    .copy-btn:hover { background: var(--accent); color: #fff; }
+    .sev-error   { color: #c0392b; font-weight: 700; }
+    .sev-warning { color: #d96f32; font-weight: 700; }
+    .sev-info    { color: #8a8172; }
+    .element-ids-chip {
+      display: inline-block;
+      max-width: 420px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      background: #eef7f8;
+      border: 1px solid var(--accent);
+      border-radius: 5px;
+      padding: 2px 8px;
+      font-family: monospace;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--accent);
+      transition: background 0.15s;
+      vertical-align: middle;
+    }
+    .element-ids-chip:hover { background: var(--accent); color: #fff; }
+    .element-id-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-width: 520px;
+    }
+    .element-id-btn {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      background: #eef7f8;
+      color: var(--accent);
+      font-family: monospace;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      width: auto;
+      transition: background 0.15s, color 0.15s;
+    }
+    .element-id-btn:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .feedback-status {
+      margin: 0 0 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .feedback-text {
+      white-space: pre-wrap;
+      line-height: 1.35;
+    }
+
+    .issue-group-row td {
+      font-weight: 700;
+      color: #1f2f3a;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: #edf4f7;
+    }
+
+    .issue-detail-label {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--ink);
+      margin-right: 6px;
+    }
+
+    .issue-detail-description {
+      display: inline-block;
+      line-height: 1.45;
+    }
+
+    .file-path-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .file-path-actions .open-btn,
+    .file-path-actions .copy-btn {
+      width: auto;
+    }
+
+    .col-resizer {
+      position: absolute;
+      top: 0;
+      right: -3px;
+      width: 8px;
+      height: 100%;
+      cursor: col-resize;
+      user-select: none;
+      touch-action: none;
+      z-index: 2;
+    }
+
+    .is-resizing,
+    .is-resizing * {
+      cursor: col-resize !important;
+      user-select: none !important;
+    }
+
+    @media (max-width: 900px) {
+      .controls,
+      .kpis,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .chart-box {
+        height: 280px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="gate" id="studentGate">
+      <div class="card gate-card">
+        <h1>TA Student Offline Dashboard</h1>
+        <p>Enter your student ID to unlock only your own dashboard data. The charts and tables stay hidden until you confirm your ID.</p>
+        <div class="gate-actions">
+          <div>
+            <label for="studentIdEntry">Student ID</label>
+            <input id="studentIdEntry" type="text" placeholder="Enter your student ID" autocomplete="off" />
+          </div>
+          <button id="unlockBtn">View My Dashboard</button>
+          <hr style="border:none;border-top:1px solid var(--line);margin:6px 0" />
+          <div class="token-grid">
+            <div>
+              <label for="packageBaseUrlEntry">Token Package Base URL (Optional)</label>
+              <input id="packageBaseUrlEntry" type="text" placeholder="https://example.com/split_students_YYYYMMDD_HHMMSS/token_packages" autocomplete="off" />
+            </div>
+            <div>
+              <label for="tokenEntry">Access Token</label>
+              <input id="tokenEntry" type="text" placeholder="Paste your access token" autocomplete="off" />
+            </div>
+            <button id="loadByTokenBtn" type="button">Load By Token</button>
+            <div id="tokenLoadStatus" class="token-status">Optional online mode: use your instructor-provided token package link.</div>
+          </div>
+        </div>
+        <div class="gate-help">Tip: If the CSV uses names instead of IDs, type the exact student name used in the export. Token mode only loads your package when your token is valid.</div>
+      </div>
+    </div>
+
+    <div id="dashboardShell" class="dashboard-hidden">
+      <div class="header">
+        <h1>TA Student Offline Dashboard</h1>
+        <p>Load your Metrics and Issues V2 CSVs to review your own rule outcomes and issue patterns offline.</p>
+      </div>
+
+      <div class="student-banner card">
+        <div>Viewing data for <strong id="activeStudentLabel">Unknown student</strong></div>
+        <button id="changeStudentBtn" type="button">Change ID</button>
+      </div>
+
+      <div class="controls">
+      <div class="card">
+        <label for="csvFile">Metrics CSV</label>
+        <input id="csvFile" type="file" accept=".csv" />
+      </div>
+      <div class="card">
+        <label for="issuesCsvFile">Issues CSV</label>
+        <input id="issuesCsvFile" type="file" accept=".csv" />
+      </div>
+      <div class="card">
+        <label for="feedbackCsvFile">Feedback CSV</label>
+        <input id="feedbackCsvFile" type="file" accept=".csv" />
+      </div>
+      <div class="card">
+        <label for="studentFilter">Student Profile</label>
+        <input id="studentFilter" type="text" placeholder="Student ID" readonly />
+      </div>
+      <div class="card">
+        <label for="trendViewFilter">Trend View</label>
+        <select id="trendViewFilter">
+          <option value="timestamp" selected>Normal trend (timestamp order)</option>
+          <option value="latest_assignment">Latest run per assignment</option>
+        </select>
+      </div>
+      <div class="card">
+        <label>Action</label>
+        <button id="renderBtn">Render Charts</button>
+      </div>
+    </div>
+
+    <div class="header" style="margin-top:14px">
+      <h2 style="margin:0 0 4px">Assignment Scores</h2>
+      <p id="assignmentFilterHint" style="margin:0;color:var(--muted)" title="Click one or more assignment cards to filter all tables and charts. Click a selected card again to unselect it. If no cards are selected, all assignments are shown.">Average baseline score per assignment. Click cards to filter (multi-select). Last card shows average of selected cards or all when none selected.</p>
+    </div>
+
+    <div class="kpis" id="assignmentScoreCards">
+      <div class="kpi avg-card"><div class="label">All Assignments Average</div><div class="value">0.0%</div></div>
+    </div>
+
+    <div class="header">
+      <h2 style="margin:0 0 4px">Instructor Feedback</h2>
+      <p style="margin:0;color:var(--muted)">Feedback per assignment from BatchCheck_Feedback CSV.</p>
+    </div>
+
+    <div class="card file-table-wrap" style="margin-top:14px;margin-bottom:14px">
+      <p id="feedbackStatusText" class="feedback-status">Load a Feedback CSV to view instructor comments.</p>
+      <table class="file-table" id="feedbackTable">
+        <thead>
+          <tr>
+            <th>Assignment</th>
+            <th>Student</th>
+            <th>Feedback</th>
+            <th>Updated (UTC)</th>
+          </tr>
+        </thead>
+        <tbody id="feedbackTableBody">
+          <tr><td colspan="4" style="color:var(--muted);padding:16px">No feedback loaded yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid">
+      <div class="card chart-card">
+        <h3>Top Rules by Fail Count</h3>
+        <div class="chart-box"><canvas id="failByRuleChart"></canvas></div>
+      </div>
+      <div class="card chart-card">
+        <h3>Baseline Score Trend</h3>
+        <div class="chart-box"><canvas id="scoreTrendChart"></canvas></div>
+      </div>
+    </div>
+
+    <hr style="border:none;border-top:1px solid var(--line);margin:20px 0" />
+
+    <div class="header">
+      <h2 style="margin:0 0 4px">Issues Analysis</h2>
+      <p style="margin:0;color:var(--muted)">From BatchCheck_Issues_V2_Report.csv</p>
+    </div>
+
+    <div class="card chart-card" style="margin-top:14px" id="issuesSection">
+      <h3>Issue Count Trend over Runs</h3>
+      <p class="trend-note">Click legend items to hide/show issue-type lines. Use Trend View to switch between timestamp order and latest run per assignment.</p>
+      <div class="chart-box"><canvas id="issueCountTrendChart"></canvas></div>
+    </div>
+
+    <hr style="border:none;border-top:1px solid var(--line);margin:20px 0" />
+
+    <div class="header">
+      <h2 style="margin:0 0 4px">My Issues by File</h2>
+      <p style="margin:0;color:var(--muted)">
+        Review issue totals per file.
+      </p>
+    </div>
+
+    <div class="card file-table-wrap" id="fileTableSection" style="margin-top:14px">
+      <table class="file-table" id="fileTable">
+        <thead>
+          <tr>
+            <th>Assignment Code / Timestamp</th>
+            <th>File Name</th>
+            <th>Total Issues</th>
+            <th>Completion</th>
+            <th>Naming</th>
+            <th>Revit Warning</th>
+            <th>ifcGUID</th>
+            <th>Other</th>
+            <th>Open / Copy Path</th>
+          </tr>
+        </thead>
+        <tbody id="fileTableBody">
+          <tr><td colspan="9" style="color:var(--muted);padding:16px">Load an Issues CSV to see per-file issues.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr style="border:none;border-top:1px solid var(--line);margin:20px 0" />
+
+    <div class="header">
+      <h2 style="margin:0 0 4px">Issue Detail</h2>
+      <p style="margin:0;color:var(--muted)">
+        Per-issue breakdown. Copy Element IDs and use <strong>Manage &rarr; Select by ID</strong> in Revit to locate affected elements.
+      </p>
+    </div>
+
+    <div class="card file-table-wrap" id="issueDetailSection" style="margin-top:14px">
+      <table class="file-table" id="issueDetailTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Rule</th>
+            <th>Issue Detail</th>
+            <th>Affected&nbsp;Count</th>
+            <th>Element IDs <span style="font-weight:normal;font-size:0.85em;color:var(--muted)">(click to copy)</span></th>
+          </tr>
+        </thead>
+        <tbody id="issueDetailTableBody">
+          <tr><td colspan="5" style="color:var(--muted);padding:16px">Load an Issues CSV to see issue details.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="hint">
+      Tip: Type a Student ID to filter.
+    </div>
+    </div>
+  </div>
+
+  <script>
+    let allRows = [];
+    let allIssueRows = [];
+    let feedbackByKey = new Map();
+    let charts = [];
+    let activeStudentId = "";
+    let selectedAssignmentCodes = new Set();
+
+    const studentGate = document.getElementById("studentGate");
+    const dashboardShell = document.getElementById("dashboardShell");
+    const studentIdEntry = document.getElementById("studentIdEntry");
+    const unlockBtn = document.getElementById("unlockBtn");
+    const packageBaseUrlEntry = document.getElementById("packageBaseUrlEntry");
+    const tokenEntry = document.getElementById("tokenEntry");
+    const loadByTokenBtn = document.getElementById("loadByTokenBtn");
+    const tokenLoadStatus = document.getElementById("tokenLoadStatus");
+    const changeStudentBtn = document.getElementById("changeStudentBtn");
+    const activeStudentLabel = document.getElementById("activeStudentLabel");
+    const csvFile = document.getElementById("csvFile");
+    const issuesCsvFile = document.getElementById("issuesCsvFile");
+    const feedbackCsvFile = document.getElementById("feedbackCsvFile");
+    const studentFilter = document.getElementById("studentFilter");
+    const assignmentScoreCards = document.getElementById("assignmentScoreCards");
+    const feedbackStatusText = document.getElementById("feedbackStatusText");
+    const feedbackTableBody = document.getElementById("feedbackTableBody");
+    const renderBtn = document.getElementById("renderBtn");
+    const trendViewFilter = document.getElementById("trendViewFilter");
+    const BANGKOK_TZ = "Asia/Bangkok";
+    const bangkokFormatter = new Intl.DateTimeFormat("en-GB", {
+      timeZone: BANGKOK_TZ,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    });
+
+    function toNumber(v) {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    }
+
+    function normalizeText(v) {
+      return String(v || "").trim();
+    }
+
+    function setActiveStudent(studentId) {
+      const normalized = normalizeText(studentId);
+      activeStudentId = normalized;
+      studentFilter.value = normalized;
+      activeStudentLabel.textContent = normalized || "Unknown student";
+      selectedAssignmentCodes = new Set();
+    }
+
+    function openDashboard(studentId) {
+      setActiveStudent(studentId);
+      studentGate.classList.add("dashboard-hidden");
+      dashboardShell.classList.remove("dashboard-hidden");
+    }
+
+    function closeDashboard() {
+      dashboardShell.classList.add("dashboard-hidden");
+      studentGate.classList.remove("dashboard-hidden");
+      studentIdEntry.value = activeStudentId;
+      studentIdEntry.focus();
+    }
+
+    function setTokenStatus(message, isError) {
+      if (!tokenLoadStatus) return;
+      tokenLoadStatus.textContent = message || "";
+      tokenLoadStatus.style.color = isError ? "#c0392b" : "var(--muted)";
+    }
+
+    function ensureTrailingSlash(urlText) {
+      const text = normalizeText(urlText);
+      if (!text) return "";
+      return text.endsWith("/") ? text : text + "/";
+    }
+
+    function buildManifestUrl(baseUrl, token) {
+      const base = ensureTrailingSlash(baseUrl);
+      return base + encodeURIComponent(token) + "/manifest.json";
+    }
+
+    function resolveUrl(baseUrl, relativePath) {
+      return new URL(relativePath, baseUrl).toString();
+    }
+
+    function parseCsvText(text, parseRow) {
+      return new Promise((resolve, reject) => {
+        Papa.parse(text, {
+          header: true,
+          skipEmptyLines: true,
+          complete: (results) => {
+            try {
+              resolve((results.data || []).map(parseRow));
+            } catch (error) {
+              reject(error);
+            }
+          },
+          error: reject
+        });
+      });
+    }
+
+    async function fetchCsvRows(url, parseRow) {
+      const response = await fetch(url, { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error("Failed to fetch " + url + " (HTTP " + response.status + ")");
+      }
+      const text = await response.text();
+      return parseCsvText(text, parseRow);
+    }
+
+    async function loadTokenPackage() {
+      const baseUrl = normalizeText(packageBaseUrlEntry && packageBaseUrlEntry.value);
+      const token = normalizeText(tokenEntry && tokenEntry.value);
+      if (!baseUrl || !token) {
+        setTokenStatus("Token mode requires both package base URL and access token.", true);
+        return;
+      }
+
+      const manifestUrl = buildManifestUrl(baseUrl, token);
+      setTokenStatus("Loading token package...", false);
+
+      try {
+        const manifestResponse = await fetch(manifestUrl, { cache: "no-store" });
+        if (!manifestResponse.ok) {
+          throw new Error("Manifest request failed (HTTP " + manifestResponse.status + ")");
+        }
+
+        const manifest = await manifestResponse.json();
+        const files = manifest && manifest.files ? manifest.files : {};
+        const metricsPath = normalizeText(files.metrics || "metrics.csv");
+        const issuesPath = normalizeText(files.issues || "issues.csv");
+        const feedbackPath = normalizeText(files.feedback || "feedback.csv");
+        if (!metricsPath || !issuesPath || !feedbackPath) {
+          throw new Error("Manifest missing files.metrics/files.issues/files.feedback");
+        }
+
+        const metricsUrl = resolveUrl(manifestUrl, metricsPath);
+        const issuesUrl = resolveUrl(manifestUrl, issuesPath);
+        const feedbackUrl = resolveUrl(manifestUrl, feedbackPath);
+
+        const [metricRows, issueRows, feedbackRows] = await Promise.all([
+          fetchCsvRows(metricsUrl, parseMetricsRow),
+          fetchCsvRows(issuesUrl, parseIssueRow),
+          fetchCsvRows(feedbackUrl, parseFeedbackRow)
+        ]);
+
+        allRows = metricRows;
+        allIssueRows = issueRows;
+        feedbackByKey = new Map();
+        for (const row of feedbackRows) {
+          upsertFeedbackEntry(row);
+        }
+
+        const manifestStudent = normalizeText(manifest.student_id || manifest.student_name || token);
+        if (manifestStudent) {
+          setActiveStudent(manifestStudent);
+        }
+
+        openDashboard(manifestStudent || token);
+        renderAll();
+        setTokenStatus("Token package loaded successfully.", false);
+      } catch (error) {
+        setTokenStatus("Failed to load token package: " + (error && error.message ? error.message : String(error)), true);
+      }
+    }
+
+    function getQueryParams() {
+      try {
+        return new URLSearchParams(window.location.search || "");
+      } catch (error) {
+        return new URLSearchParams("");
+      }
+    }
+
+    async function tryLoadFromQueryToken() {
+      const params = getQueryParams();
+      const token = normalizeText(params.get("token"));
+      const baseUrl = normalizeText(params.get("base"));
+      if (!token || !baseUrl) return;
+      if (tokenEntry) tokenEntry.value = token;
+      if (packageBaseUrlEntry) packageBaseUrlEntry.value = baseUrl;
+      await loadTokenPackage();
+    }
+
+    function requireStudentId() {
+      studentGate.classList.remove("dashboard-hidden");
+      dashboardShell.classList.add("dashboard-hidden");
+      return false;
+    }
+
+    function parseTimestampInput(value) {
+      const text = normalizeText(value);
+      if (!text) return null;
+      const basicUtcPattern = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?$/;
+      const normalized = basicUtcPattern.test(text)
+        ? text.replace(" ", "T") + "Z"
+        : text;
+      const date = new Date(normalized);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    function formatRunTimeBangkok(value) {
+      const text = normalizeText(value);
+      const date = parseTimestampInput(text);
+      if (!date) return text ? text.slice(0, 16).replace("T", " ") : "";
+      return bangkokFormatter.format(date).replace(",", "") + " ICT";
+    }
+
+    function normalizeSeverity(v) {
+      const sev = normalizeText(v).toLowerCase();
+      if (sev === "error" || sev === "warning" || sev === "info") return sev;
+      return "info";
+    }
+
+    function normalizeStatus(v) {
+      const status = normalizeText(v).toLowerCase();
+      if (status === "pass" || status === "fail" || status === "info") return status;
+      return "info";
+    }
+
+    function isTeacherBaselineRow(row) {
+      const workflowMode = normalizeText(row && row.workflow_mode).toLowerCase();
+      const reportLabel = normalizeText(row && row.report_label).toLowerCase();
+      return workflowMode.indexOf("build baseline") !== -1 || reportLabel.indexOf("build baseline") !== -1;
+    }
+
+    function excludeTeacherBaselineRows(items) {
+      return (items || []).filter(row => !isTeacherBaselineRow(row));
+    }
+
+    function getAssignmentCode(row) {
+      return normalizeText(row && row.assignment_code) || "UNASSIGNED";
+    }
+
+    function getRunKey(row) {
+      return normalizeText(row && row.run_id) || normalizeText(row && row.run_timestamp_utc);
+    }
+
+    function getRunMoment(row) {
+      const ts = normalizeText(row && row.run_timestamp_utc);
+      if (ts) return ts;
+      return normalizeText(row && row.run_id);
+    }
+
+    function assignmentSortKey(code) {
+      const text = normalizeText(code).toUpperCase();
+      if (!text) {
+        return { prefix: "zzz", number: Number.POSITIVE_INFINITY, suffix: "" };
+      }
+      const match = text.match(/^(.*?)(\d+)([^\d]*)$/);
+      if (!match) {
+        return { prefix: text, number: Number.POSITIVE_INFINITY, suffix: "" };
+      }
+      return {
+        prefix: match[1] || "",
+        number: Number(match[2]),
+        suffix: match[3] || ""
+      };
+    }
+
+    function compareAssignmentCodes(a, b) {
+      const left = assignmentSortKey(a);
+      const right = assignmentSortKey(b);
+      const prefixCmp = left.prefix.localeCompare(right.prefix, undefined, { sensitivity: "base" });
+      if (prefixCmp !== 0) return prefixCmp;
+      if (left.number !== right.number) return left.number - right.number;
+      return left.suffix.localeCompare(right.suffix, undefined, { sensitivity: "base" });
+    }
+
+    function getTrendViewMode() {
+      return trendViewFilter ? trendViewFilter.value : "timestamp";
+    }
+
+    function getLatestRowsPerAssignment(items) {
+      const bestByAssignment = new Map();
+      for (const row of items || []) {
+        const assignment = getAssignmentCode(row);
+        const runMoment = getRunMoment(row);
+        const runKey = getRunKey(row);
+        const prev = bestByAssignment.get(assignment);
+        if (!prev || runMoment > prev.runMoment || (runMoment === prev.runMoment && runKey > prev.runKey)) {
+          bestByAssignment.set(assignment, { runMoment, runKey });
+        }
+      }
+
+      return (items || []).filter(row => {
+        const assignment = getAssignmentCode(row);
+        const best = bestByAssignment.get(assignment);
+        if (!best) return false;
+        return getRunKey(row) === best.runKey;
+      });
+    }
+
+    function getTrendRecords(items) {
+      const mode = getTrendViewMode();
+      if (mode === "latest_assignment") {
+        return getLatestRowsPerAssignment(items)
+          .slice()
+          .sort((a, b) => compareAssignmentCodes(getAssignmentCode(a), getAssignmentCode(b)));
+      }
+
+      return (items || []).slice().sort((a, b) => {
+        const aMoment = getRunMoment(a);
+        const bMoment = getRunMoment(b);
+        const momentCmp = aMoment.localeCompare(bMoment, undefined, { numeric: true, sensitivity: "base" });
+        if (momentCmp !== 0) return momentCmp;
+        return getRunKey(a).localeCompare(getRunKey(b), undefined, { numeric: true, sensitivity: "base" });
+      });
+    }
+
+    function includeInFailRuleChart(row) {
+      const ruleName = normalizeText(row && row.rule_name).toLowerCase();
+      if (ruleName.indexOf("teacher baseline delta") !== -1) return false;
+      return true;
+    }
+
+    function colorForRuleGroup(ruleGroup) {
+      const key = normalizeText(ruleGroup).toLowerCase();
+      const palette = {
+        "completion": { bg: "rgba(31, 111, 120, 0.78)", border: "rgba(31, 111, 120, 1)" },
+        "naming": { bg: "rgba(217, 111, 50, 0.78)", border: "rgba(217, 111, 50, 1)" },
+        "other": { bg: "rgba(123, 93, 62, 0.78)", border: "rgba(123, 93, 62, 1)" },
+        "revit warning": { bg: "rgba(122, 84, 167, 0.78)", border: "rgba(122, 84, 167, 1)" },
+        "view": { bg: "rgba(55, 125, 84, 0.78)", border: "rgba(55, 125, 84, 1)" },
+        "sheet": { bg: "rgba(74, 93, 166, 0.78)", border: "rgba(74, 93, 166, 1)" }
+      };
+      return palette[key] || { bg: "rgba(107, 99, 86, 0.78)", border: "rgba(107, 99, 86, 1)" };
+    }
+
+    function assignmentLabel(code, name) {
+      const assignmentCode = normalizeText(code) || "UNASSIGNED";
+      const assignmentName = normalizeText(name);
+      return assignmentName ? assignmentCode + " - " + assignmentName : assignmentCode;
+    }
+
+    function feedbackKey(studentId, assignmentCode) {
+      return normalizeText(studentId).toLowerCase() + "||" + normalizeText(assignmentCode).toLowerCase();
+    }
+
+    function parseFeedbackRow(r) {
+      return {
+        updated_at_utc: valueFrom(r, ["updated_at_utc", "updated at utc"]),
+        instructor_name: valueFrom(r, ["instructor_name", "instructor name"]),
+        student_id: valueFrom(r, ["student_id", "student id", "id"]),
+        student_name: valueFrom(r, ["student_name", "student name", "name"]),
+        assignment_code: valueFrom(r, ["assignment_code", "assignment code", "assignment"]),
+        assignment_name: valueFrom(r, ["assignment_name", "assignment name"]),
+        feedback_text: valueFrom(r, ["feedback_text", "feedback text", "feedback"]),
+        feedback_status: valueFrom(r, ["feedback_status", "feedback status"], "final"),
+        visible_to_student: valueFrom(r, ["visible_to_student", "visible to student"], "true")
+      };
+    }
+
+    function upsertFeedbackEntry(entry) {
+      const sid = normalizeText(entry.student_id || entry.student_name);
+      const assignment = normalizeText(entry.assignment_code);
+      if (!sid || !assignment) return;
+      feedbackByKey.set(feedbackKey(sid, assignment), {
+        updated_at_utc: normalizeText(entry.updated_at_utc),
+        instructor_name: normalizeText(entry.instructor_name),
+        student_id: sid,
+        student_name: normalizeText(entry.student_name),
+        assignment_code: assignment,
+        assignment_name: normalizeText(entry.assignment_name),
+        feedback_text: normalizeText(entry.feedback_text),
+        feedback_status: normalizeText(entry.feedback_status) || "final",
+        visible_to_student: normalizeText(entry.visible_to_student || "true").toLowerCase()
+      });
+    }
+
+    function renderFeedbackTable(metricRows, issueRows) {
+      const targets = new Map();
+      for (const row of [...(metricRows || []), ...(issueRows || [])]) {
+        const sid = normalizeText(row.student_id || row.student_name);
+        if (!sid) continue;
+        const assignment_code = getAssignmentCode(row);
+        const assignment_name = normalizeText(row.assignment_name);
+        const key = feedbackKey(sid, assignment_code);
+        const existing = targets.get(key) || {
+          student_id: sid,
+          student_name: normalizeText(row.student_name),
+          assignment_code,
+          assignment_name
+        };
+        if (!existing.student_name && row.student_name) existing.student_name = normalizeText(row.student_name);
+        if (!existing.assignment_name && assignment_name) existing.assignment_name = assignment_name;
+        targets.set(key, existing);
+      }
+
+      const rows = [...targets.values()].sort((a, b) => {
+        const aKey = a.assignment_code + "||" + a.student_id;
+        const bKey = b.assignment_code + "||" + b.student_id;
+        return aKey.localeCompare(bKey, undefined, { numeric: true, sensitivity: "base" });
+      });
+
+      if (!rows.length) {
+        feedbackTableBody.innerHTML = "<tr><td colspan='4' style='color:var(--muted);padding:16px'>No student-assignment rows in current filter.</td></tr>";
+        feedbackStatusText.textContent = "Load Metrics/Issues CSV and set Student Profile to see feedback rows.";
+        return;
+      }
+
+      const html = rows.map(row => {
+        const entry = feedbackByKey.get(feedbackKey(row.student_id, row.assignment_code));
+        const visible = !entry || entry.visible_to_student !== "false";
+        const feedbackText = entry && visible ? entry.feedback_text : "";
+        const updated = entry && visible ? entry.updated_at_utc : "";
+        const displayStudent = row.student_name ? (row.student_id + " - " + row.student_name) : row.student_id;
+        return "<tr>" +
+          "<td>" + escHtml(assignmentLabel(row.assignment_code, row.assignment_name)) + "</td>" +
+          "<td>" + escHtml(displayStudent) + "</td>" +
+          "<td class='feedback-text'>" + (feedbackText ? escHtml(feedbackText) : "<span style='color:var(--muted)'>No feedback yet.</span>") + "</td>" +
+          "<td>" + escHtml(updated) + "</td>" +
+        "</tr>";
+      }).join("");
+
+      feedbackTableBody.innerHTML = html;
+      const visibleCount = rows.filter(row => {
+        const entry = feedbackByKey.get(feedbackKey(row.student_id, row.assignment_code));
+        return entry && entry.feedback_text && entry.visible_to_student !== "false";
+      }).length;
+      feedbackStatusText.textContent = "Showing " + visibleCount + " feedback item(s) across " + rows.length + " assignment row(s).";
+    }
+
+    function checkKey(r) {
+      return [
+        r.run_id || r.run_timestamp_utc || "",
+        r.student_id || r.student_name || "",
+        r.file_path || r.file_name || "",
+        r.rule_group || "",
+        r.rule_name || "",
+      ].join("||");
+    }
+
+    function getUniqueChecks(rows) {
+      const seen = new Map();
+      for (const row of rows) {
+        const key = checkKey(row);
+        if (!seen.has(key)) {
+          seen.set(key, {
+            ...row,
+            status: normalizeStatus(row.status)
+          });
+        }
+      }
+      return [...seen.values()];
+    }
+
+    function groupBy(items, keyFn) {
+      const map = new Map();
+      for (const item of items) {
+        const key = keyFn(item);
+        map.set(key, (map.get(key) || []).concat(item));
+      }
+      return map;
+    }
+
+    function destroyCharts() {
+      for (const c of charts) c.destroy();
+      charts = [];
+    }
+
+    function enableResizableTables() {
+      const tables = document.querySelectorAll("table.file-table");
+      for (const table of tables) {
+        const headers = table.querySelectorAll("thead th");
+        for (const th of headers) {
+          if (th.querySelector(":scope > .col-resizer")) continue;
+
+          const resizer = document.createElement("span");
+          resizer.className = "col-resizer";
+          th.appendChild(resizer);
+
+          resizer.addEventListener("mousedown", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const startX = event.clientX;
+            const startWidth = th.getBoundingClientRect().width;
+            const minWidth = 70;
+
+            th.style.width = Math.max(minWidth, Math.round(startWidth)) + "px";
+            document.body.classList.add("is-resizing");
+
+            function onMouseMove(moveEvent) {
+              const dx = moveEvent.clientX - startX;
+              const nextWidth = Math.max(minWidth, Math.round(startWidth + dx));
+              th.style.width = nextWidth + "px";
+            }
+
+            function onMouseUp() {
+              document.removeEventListener("mousemove", onMouseMove);
+              document.removeEventListener("mouseup", onMouseUp);
+              document.body.classList.remove("is-resizing");
+            }
+
+            document.addEventListener("mousemove", onMouseMove);
+            document.addEventListener("mouseup", onMouseUp);
+          });
+        }
+      }
+    }
+
+    function getStudentScopedRows(items) {
+      const sid = normalizeText(activeStudentId || studentFilter.value).toLowerCase();
+      const rows = excludeTeacherBaselineRows(items);
+      return rows.filter(r => {
+        if (!sid) return false;
+        const rowId = normalizeText(r.student_id || r.student_name).toLowerCase();
+        return rowId === sid;
+      });
+    }
+
+    function updateAssignmentSelection(rows, issueRows) {
+      const combined = [...getStudentScopedRows(rows), ...getStudentScopedRows(issueRows)];
+
+      const assignmentMap = new Map();
+      for (const row of combined) {
+        const code = getAssignmentCode(row);
+        const name = normalizeText(row.assignment_name);
+        if (!assignmentMap.has(code)) {
+          assignmentMap.set(code, name);
+        } else if (!assignmentMap.get(code) && name) {
+          assignmentMap.set(code, name);
+        }
+      }
+
+      const codes = [...assignmentMap.keys()].sort(compareAssignmentCodes);
+      const nextSelected = new Set();
+      for (const code of selectedAssignmentCodes) {
+        if (codes.indexOf(code) !== -1) {
+          nextSelected.add(code);
+        }
+      }
+      selectedAssignmentCodes = nextSelected;
+
+      return codes.map(code => ({
+        code,
+        name: assignmentMap.get(code) || ""
+      }));
+    }
+
+    function toggleAssignmentSelection(code) {
+      const normalized = normalizeText(code);
+      if (!normalized) return;
+      if (selectedAssignmentCodes.has(normalized)) {
+        selectedAssignmentCodes.delete(normalized);
+      } else {
+        selectedAssignmentCodes.add(normalized);
+      }
+      renderAll();
+    }
+
+    function isAssignmentSelected(code) {
+      return selectedAssignmentCodes.has(normalizeText(code));
+    }
+
+    function renderAssignmentScoreCards(rows, assignmentEntries) {
+      if (!assignmentScoreCards) return;
+
+      const scoreRows = rows.filter(r =>
+        r.metric_name === "baseline_match_score_pct" && toNumber(r.metric_value) !== null
+      );
+
+      const grouped = groupBy(scoreRows, r => getAssignmentCode(r));
+      const scoreMap = new Map(
+        [...grouped.entries()].map(([code, arr]) => {
+          const avg = arr.reduce((sum, row) => sum + Number(row.metric_value), 0) / arr.length;
+          return [code, avg];
+        })
+      );
+
+      const entries = (assignmentEntries || [])
+        .map(entry => ({
+          code: entry.code,
+          name: entry.name,
+          avg: scoreMap.has(entry.code) ? scoreMap.get(entry.code) : null
+        }))
+        .sort((a, b) => compareAssignmentCodes(a.code, b.code));
+
+      if (!entries.length) {
+        assignmentScoreCards.innerHTML = "<div class='kpi avg-card'><div class='label'>All Assignments Average</div><div class='value'>N/A</div></div>";
+        return;
+      }
+
+      const selectedEntries = entries.filter(entry => isAssignmentSelected(entry.code) && entry.avg !== null);
+      const averageSource = selectedEntries.length ? selectedEntries : entries.filter(entry => entry.avg !== null);
+      const overall = averageSource.length
+        ? (averageSource.reduce((sum, entry) => sum + entry.avg, 0) / averageSource.length)
+        : null;
+
+      const cards = entries.map(entry => {
+        const selectedClass = isAssignmentSelected(entry.code) ? " selected" : "";
+        const valueText = entry.avg === null ? "N/A" : (entry.avg.toFixed(1) + "%");
+        return "<div class='kpi assignment-card" + selectedClass + "' data-assignment-code='" + escHtml(entry.code) + "' title='Click to " + (isAssignmentSelected(entry.code) ? "remove" : "add") + " this assignment filter'>" +
+          "<div class='label'>" + escHtml(assignmentLabel(entry.code, entry.name)) + "</div>" +
+          "<div class='value'>" + escHtml(valueText) + "</div>" +
+        "</div>";
+      }).join("");
+
+      const averageLabel = selectedEntries.length ? "Selected Assignments Average" : "All Assignments Average";
+      const averageValue = overall === null ? "N/A" : (overall.toFixed(1) + "%");
+
+      assignmentScoreCards.innerHTML = cards +
+        "<div class='kpi avg-card'>" +
+          "<div class='label'>" + escHtml(averageLabel) + "</div>" +
+          "<div class='value'>" + escHtml(averageValue) + "</div>" +
+        "</div>";
+
+      const buttons = assignmentScoreCards.querySelectorAll(".assignment-card[data-assignment-code]");
+      for (const btn of buttons) {
+        btn.addEventListener("click", () => {
+          const code = btn.getAttribute("data-assignment-code") || "";
+          toggleAssignmentSelection(code);
+        });
+      }
+    }
+
+    function updateStudentFilter(rows, issueRows) {
+      const current = normalizeText(studentFilter.value);
+      if (current) setActiveStudent(current);
+    }
+
+    function getFilteredRows() {
+      const sid = normalizeText(activeStudentId || studentFilter.value).toLowerCase();
+      const rows = excludeTeacherBaselineRows(allRows);
+      return rows.filter(r => {
+        if (!sid) return false;
+        const rowId = normalizeText(r.student_id || r.student_name).toLowerCase();
+        if (rowId !== sid) return false;
+        if (selectedAssignmentCodes.size && !selectedAssignmentCodes.has(getAssignmentCode(r))) return false;
+        return true;
+      });
+    }
+
+    function getFilteredIssueRows() {
+      const sid = normalizeText(activeStudentId || studentFilter.value).toLowerCase();
+      const rows = excludeTeacherBaselineRows(allIssueRows);
+      return rows.filter(r => {
+        if (!sid) return false;
+        const rowId = normalizeText(r.student_id || r.student_name).toLowerCase();
+        if (rowId !== sid) return false;
+        if (selectedAssignmentCodes.size && !selectedAssignmentCodes.has(getAssignmentCode(r))) return false;
+        return true;
+      });
+    }
+
+    function renderFailByRule(rows) {
+      const checkRows = getUniqueChecks(rows);
+      const fails = checkRows
+        .filter(r => normalizeStatus(r.status) === "fail")
+        .filter(includeInFailRuleChart);
+      const grouped = groupBy(fails, r => {
+        const group = normalizeText(r.rule_group) || "(blank)";
+        const rule = normalizeText(r.rule_name) || "(blank)";
+        return group + "||" + rule;
+      });
+      const data = [...grouped.entries()]
+        .map(([k, v]) => {
+          const parts = k.split("||");
+          const group = parts[0] || "(blank)";
+          const rule = parts.slice(1).join("||") || "(blank)";
+          return {
+            label: rule,
+            ruleGroup: group,
+            value: v.length
+          };
+        })
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 12);
+
+      const colors = data.map(d => colorForRuleGroup(d.ruleGroup));
+      const legendRows = [];
+      const seenLegendGroups = new Set();
+      for (const row of data) {
+        if (seenLegendGroups.has(row.ruleGroup)) continue;
+        seenLegendGroups.add(row.ruleGroup);
+        legendRows.push({
+          ruleGroup: row.ruleGroup,
+          color: colorForRuleGroup(row.ruleGroup)
+        });
+      }
+
+      const ctx = document.getElementById("failByRuleChart");
+      charts.push(new Chart(ctx, {
+        type: "bar",
+        plugins: [{
+          id: "verticalRuleLabels",
+          afterDatasetsDraw(chart) {
+            const dataset = chart.data.datasets && chart.data.datasets[0];
+            const labels = chart.data.labels || [];
+            if (!dataset || !labels.length) return;
+
+            const meta = chart.getDatasetMeta(0);
+            const yScale = chart.scales && chart.scales.y;
+            if (!meta || !meta.data || !yScale) return;
+
+            const ctx2d = chart.ctx;
+            ctx2d.save();
+            ctx2d.font = "600 11px Segoe UI, Tahoma, sans-serif";
+            ctx2d.textAlign = "center";
+            ctx2d.textBaseline = "middle";
+
+            const barColors = Array.isArray(dataset.backgroundColor) ? dataset.backgroundColor : [];
+
+            function parseRgb(input) {
+              const text = String(input || "").trim();
+              let m = text.match(/^rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+              if (m) {
+                return {
+                  r: Number(m[1]),
+                  g: Number(m[2]),
+                  b: Number(m[3])
+                };
+              }
+              m = text.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+              if (m) {
+                const hex = m[1];
+                if (hex.length === 3) {
+                  return {
+                    r: parseInt(hex[0] + hex[0], 16),
+                    g: parseInt(hex[1] + hex[1], 16),
+                    b: parseInt(hex[2] + hex[2], 16)
+                  };
+                }
+                return {
+                  r: parseInt(hex.slice(0, 2), 16),
+                  g: parseInt(hex.slice(2, 4), 16),
+                  b: parseInt(hex.slice(4, 6), 16)
+                };
+              }
+              return null;
+            }
+
+            function contrastColor(barColor) {
+              const rgb = parseRgb(barColor);
+              if (!rgb) return "rgba(255, 255, 255, 0.95)";
+              const luminance = (0.299 * rgb.r) + (0.587 * rgb.g) + (0.114 * rgb.b);
+              return luminance < 145 ? "rgba(255, 255, 255, 0.95)" : "#232019";
+            }
+
+            for (let i = 0; i < meta.data.length; i++) {
+              const bar = meta.data[i];
+              const rawLabel = labels[i];
+              const label = String(rawLabel == null ? "" : rawLabel);
+              if (!label) continue;
+
+              const metrics = ctx2d.measureText(label);
+              const barBottom = Math.max(bar.y, bar.base);
+              const x = bar.x;
+              const y = barBottom - (metrics.width / 2) - 4;
+
+              ctx2d.fillStyle = contrastColor(barColors[i]);
+              ctx2d.save();
+              ctx2d.translate(x, y);
+              ctx2d.rotate(-Math.PI / 2);
+              ctx2d.fillText(label, 0, 0);
+              ctx2d.restore();
+            }
+
+            ctx2d.restore();
+          }
+        }],
+        data: {
+          labels: data.map(d => d.label),
+          datasets: [{
+            label: "Fail count",
+            data: data.map(d => d.value),
+            backgroundColor: colors.map(c => c.bg),
+            borderColor: colors.map(c => c.border),
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: {
+            padding: {
+              top: 22
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                display: false
+              }
+            },
+            y: {
+              beginAtZero: true
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              labels: {
+                generateLabels: function() {
+                  return legendRows.map((item, index) => ({
+                    text: item.ruleGroup,
+                    fillStyle: item.color.bg,
+                    strokeStyle: item.color.border,
+                    lineWidth: 1,
+                    hidden: false,
+                    index: index
+                  }));
+                }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const row = data[context.dataIndex];
+                  return " " + row.ruleGroup + " | Fail count: " + row.value;
+                }
+              }
+            }
+          }
+        }
+      }));
+    }
+
+    function renderScoreTrend(rows) {
+      const metricRows = rows.filter(r =>
+        r.metric_name === "baseline_match_score_pct" && toNumber(r.metric_value) !== null
+      );
+      const trendMode = getTrendViewMode();
+      const points = [];
+
+      if (trendMode === "latest_assignment") {
+        const trendRows = getTrendRecords(metricRows);
+        const grouped = groupBy(trendRows, r => getAssignmentCode(r));
+        for (const [assignment, arr] of grouped.entries()) {
+          points.push({
+            label: assignment,
+            assignment,
+            score: arr.reduce((s, x) => s + Number(x.metric_value), 0) / arr.length
+          });
+        }
+        points.sort((a, b) => compareAssignmentCodes(a.assignment, b.assignment));
+      } else {
+        const grouped = groupBy(metricRows, r => r.run_id || r.run_timestamp_utc || "");
+        for (const [key, arr] of grouped.entries()) {
+          points.push({
+            label: formatRunTimeBangkok(arr[0].run_timestamp_utc || key),
+            ts: arr[0].run_timestamp_utc || key,
+            score: arr.reduce((s, x) => s + Number(x.metric_value), 0) / arr.length
+          });
+        }
+        points.sort((a, b) => a.ts.localeCompare(b.ts));
+      }
+
+      const ctx = document.getElementById("scoreTrendChart");
+      charts.push(new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: points.map(p => p.label),
+          datasets: [{
+            label: "Avg baseline score %",
+            data: points.map(p => p.score.toFixed(1)),
+            borderColor: "rgba(31, 111, 120, 1)",
+            backgroundColor: "rgba(31, 111, 120, 0.2)",
+            fill: true,
+            tension: 0.2,
+            pointRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { y: { suggestedMin: 0, suggestedMax: 100 } }
+        }
+      }));
+    }
+
+    // ── Issues charts ────────────────────────────────────────────
+
+    function renderIssueCountTrend(issueRows) {
+      const trendMode = getTrendViewMode();
+      let labels = [];
+      let xKeys = [];
+
+      if (trendMode === "latest_assignment") {
+        const trendRows = getTrendRecords(issueRows);
+        xKeys = [...new Set(trendRows.map(r => getAssignmentCode(r)))].sort(compareAssignmentCodes);
+        labels = xKeys.slice();
+      } else {
+        const runMeta = new Map();
+        for (const row of issueRows) {
+          const key = row.run_id || row.run_timestamp_utc || "";
+          if (!key) continue;
+          if (!runMeta.has(key)) runMeta.set(key, row.run_timestamp_utc || key);
+        }
+
+        const runIds = [...runMeta.keys()].sort((a, b) =>
+          (runMeta.get(a) || a).localeCompare(runMeta.get(b) || b)
+        );
+        xKeys = runIds;
+        labels = runIds.map(k => formatRunTimeBangkok(runMeta.get(k) || k));
+      }
+
+      const groupedByRun = trendMode === "latest_assignment"
+        ? groupBy(getTrendRecords(issueRows), r => getAssignmentCode(r))
+        : groupBy(issueRows, r => r.run_id || r.run_timestamp_utc || "");
+
+      function issueTypeTotalsUsingFileLogic(rows) {
+        const grouped = groupBy(rows || [], r => fileIssueGroupKey(r));
+        const completionRowsByFile = groupBy(
+          buildIssueDetailVisibleRows(rows || []).filter(r => normalizeText(r.rule_group).toLowerCase() === "completion"),
+          r => fileIssueGroupKey(r)
+        );
+
+        let completion = 0;
+        let naming = 0;
+        let revitWarning = 0;
+        let ifcguid = 0;
+        let other = 0;
+
+        for (const [fp, fileRows] of grouped.entries()) {
+          completion += (completionRowsByFile.get(fp) || []).length;
+          naming += fileRows.filter(r => normalizeText(r.rule_group).toLowerCase() === "naming").length;
+          revitWarning += fileRows.filter(r => normalizeText(r.rule_group).toLowerCase() === "revit warning").length;
+          ifcguid += fileRows.filter(r => normalizeText(r.rule_group).toLowerCase() === "ifcguid").length;
+          other += fileRows.filter(r => isOtherRuleGroup(r) && !isTeacherBaselineDeltaRow(r)).length;
+        }
+
+        return {
+          completion: completion,
+          naming: naming,
+          revitWarning: revitWarning,
+          ifcguid: ifcguid,
+          other: other
+        };
+      }
+
+      const totalsByXKey = new Map(
+        xKeys.map(xKey => [xKey, issueTypeTotalsUsingFileLogic(groupedByRun.get(xKey) || [])])
+      );
+
+      const typeSeries = [
+        { key: "completion", label: "Completion", color: "hsl(186, 56%, 36%)" },
+        { key: "naming", label: "Naming", color: "hsl(22, 70%, 48%)" },
+        { key: "revitWarning", label: "Revit Warning", color: "hsl(266, 37%, 49%)" },
+        { key: "ifcguid", label: "ifcGUID", color: "hsl(220, 42%, 50%)" },
+        { key: "other", label: "Other", color: "hsl(31, 33%, 36%)" }
+      ];
+
+      const datasets = typeSeries.map(series => ({
+        label: series.label,
+        data: xKeys.map(xKey => {
+          const totals = totalsByXKey.get(xKey) || {};
+          return Number(totals[series.key] || 0);
+        }),
+        borderColor: series.color,
+        backgroundColor: series.color,
+        fill: false,
+        tension: 0.25,
+        pointRadius: 4,
+        pointHoverRadius: 5
+      }));
+
+      const ctx = document.getElementById("issueCountTrendChart");
+      charts.push(new Chart(ctx, {
+        type: "line",
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: "nearest",
+            intersect: false
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { precision: 0 } }
+          },
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: {
+                usePointStyle: true,
+                boxWidth: 10,
+                generateLabels: (chart) => {
+                  const labels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+                  for (const label of labels) {
+                    const ds = chart.data.datasets[label.datasetIndex] || {};
+                    const color = ds.borderColor || ds.backgroundColor || label.fillStyle;
+                    label.fillStyle = color;
+                    label.strokeStyle = color;
+                    label.lineWidth = 1;
+                  }
+                  return labels;
+                }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const value = Number(context.parsed && context.parsed.y || 0);
+                  return " " + context.dataset.label + ": " + value + " issue" + (value === 1 ? "" : "s");
+                }
+              }
+            }
+          }
+        }
+      }));
+    }
+
+    function renderIssuesByFile(issueRows) {
+      const tbody = document.getElementById("fileTableBody");
+      const trendMode = getTrendViewMode();
+      if (!issueRows.length) {
+        tbody.innerHTML = "<tr><td colspan='9' style='color:var(--muted);padding:16px'>No issue rows loaded.</td></tr>";
+        return;
+      }
+
+      // Group by file_path (fall back to file_name if path missing)
+      const grouped = groupBy(issueRows, r => fileIssueGroupKey(r));
+      const completionRowsByFile = groupBy(
+        buildIssueDetailVisibleRows(issueRows).filter(r => normalizeText(r.rule_group).toLowerCase() === "completion"),
+        r => fileIssueGroupKey(r)
+      );
+
+      function formatTrendLabel(row) {
+        if (trendMode === "latest_assignment") {
+          return normalizeText(row.assignment_code) || "UNASSIGNED";
+        }
+        return formatRunTimeBangkok(row.run_timestamp_utc || row.run_id || "");
+      }
+
+      function fileTableSortLabel(rows) {
+        const row = rows && rows[0] ? rows[0] : null;
+        if (!row) return "";
+        if (trendMode === "latest_assignment") {
+          return normalizeText(row.assignment_code) || "UNASSIGNED";
+        }
+        return normalizeText(row.run_timestamp_utc || row.run_id || "");
+      }
+
+      // Build summary per file, sort by total issues desc
+      const files = [...grouped.entries()]
+        .map(([fp, rows]) => {
+          const completion = (completionRowsByFile.get(fp) || []).length;
+          const naming = rows.filter(r => normalizeText(r.rule_group).toLowerCase() === "naming").length;
+          const revitWarning = rows.filter(r => normalizeText(r.rule_group).toLowerCase() === "revit warning").length;
+          const ifcguid = rows.filter(r => normalizeText(r.rule_group).toLowerCase() === "ifcguid").length;
+          const other = rows.filter(r => isOtherRuleGroup(r) && !isTeacherBaselineDeltaRow(r)).length;
+
+          return {
+            path: fp,
+            name: rows[0].file_name || fp.split(/[\\/]/).pop(),
+            student: rows[0].student_id || "",
+            summaryLabel: formatTrendLabel(rows[0]),
+            sortLabel: fileTableSortLabel(rows),
+            // Keep total aligned with visible issue-type columns for this table.
+            total: completion + naming + revitWarning + ifcguid + other,
+            completion: completion,
+            naming: naming,
+            revitWarning: revitWarning,
+            ifcguid: ifcguid,
+            other: other
+          };
+        })
+        .sort((a, b) => {
+          const labelCmp = a.sortLabel.localeCompare(b.sortLabel, undefined, { numeric: true, sensitivity: "base" });
+          if (labelCmp !== 0) return labelCmp;
+          return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" });
+        });
+
+      const rows_html = files.map((f, i) => {
+        const path = f.path || "";
+        const url = path ? pathToFileUrl(path) : "";
+        const openBtn = url
+          ? `<a class="open-btn" href="${url.replace(/"/g, '&quot;')}" title="${path.replace(/"/g, '&quot;')}">Open File</a>`
+          : `<span style="color:var(--muted);font-size:12px">No path</span>`;
+        const copyBtn = path
+          ? `<button class="copy-btn" title="Copy path" aria-label="Copy path" onclick="copyPath(this,'${path.replace(/'/g, "\\'").replace(/\\/g, "\\\\")}')">&#128203;</button>`
+          : "";
+        return `<tr>
+          <td>${escHtml(f.summaryLabel || "")}</td>
+          <td title="${f.path.replace(/"/g, '&quot;')}">${escHtml(f.name)}</td>
+          <td style="text-align:center"><strong>${f.total}</strong></td>
+          <td style="text-align:center">${f.completion || ""}</td>
+          <td style="text-align:center">${f.naming || ""}</td>
+          <td style="text-align:center">${f.revitWarning || ""}</td>
+          <td style="text-align:center">${f.ifcguid || ""}</td>
+          <td style="text-align:center">${f.other || ""}</td>
+          <td><div class="file-path-actions">${openBtn}${copyBtn}</div></td>
+        </tr>`;
+      }).join("");
+
+      tbody.innerHTML = rows_html;
+    }
+
+    function pathToFileUrl(p) {
+      const raw = normalizeText(p);
+      if (!raw) return "";
+      if (/^file:\/\//i.test(raw)) return raw.replace(/^file:/i, "openrvt:");
+      const win = raw.replace(/\\/g, "/");
+      let normalized;
+      if (/^[A-Za-z]:/.test(win)) normalized = win;
+      else if (win.startsWith("//")) normalized = win;
+      else if (win.startsWith("/")) normalized = win;
+      else return "";
+      const encoded = normalized.replace(/[^A-Za-z0-9/:._~-]/g, c => encodeURIComponent(c));
+      return "openrvt:///" + encoded;
+    }
+
+    function copyPath(btn, path) {
+      navigator.clipboard.writeText(path).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = "Copied!";
+        setTimeout(() => { btn.textContent = orig; }, 1500);
+      }).catch(() => {
+        const ta = document.createElement("textarea");
+        ta.value = path;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        const orig = btn.textContent;
+        btn.textContent = "Copied!";
+        setTimeout(() => { btn.textContent = orig; }, 1500);
+      });
+    }
+
+    function escHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function parseElementIds(text) {
+      const raw = normalizeText(text);
+      if (!raw) return [];
+      const items = raw.split(/[\s,;|]+/).map(x => normalizeText(x)).filter(Boolean);
+      const seen = new Set();
+      const result = [];
+      for (const item of items) {
+        if (seen.has(item)) continue;
+        seen.add(item);
+        result.push(item);
+      }
+      return result;
+    }
+
+    function issueRowColor(ruleGroup) {
+      const key = normalizeText(ruleGroup).toLowerCase();
+      const palette = {
+        "revit warning": "#f1e9fb",
+        "naming": "#fff3e8",
+        "completion": "#e8f5f6",
+        "ifcguid": "#e9f0fb",
+        "other": "#f6f3ee"
+      };
+      return palette[key] || "#f7f4ef";
+    }
+
+    function displayRuleGroupName(ruleGroup) {
+      const raw = normalizeText(ruleGroup);
+      return raw || "Other";
+    }
+
+    function fileIssueGroupKey(row) {
+      return (row && (row.file_path || row.file_name)) || "(unknown)";
+    }
+
+    function isOtherRuleGroup(row) {
+      const group = normalizeText(row && row.rule_group).toLowerCase();
+      return group && group !== "completion" && group !== "naming" && group !== "revit warning" && group !== "ifcguid";
+    }
+
+    function isTeacherBaselineDeltaRow(row) {
+      const ruleName = normalizeText(row && row.rule_name).toLowerCase();
+      const issueType = normalizeText(row && row.issue_type).toLowerCase();
+      return ruleName === "teacher baseline delta" || issueType === "baseline_delta";
+    }
+
+    function issueScopeKey(row) {
+      return [
+        normalizeText((row && row.student_id) || (row && row.student_name)).toLowerCase(),
+        getAssignmentCode(row).toLowerCase(),
+        normalizeText((row && row.file_path) || (row && row.file_name)).toLowerCase()
+      ].join("||");
+    }
+
+    function isGenericCompletionFallback(text) {
+      const normalized = normalizeText(text).toLowerCase();
+      return !normalized || normalized === "completion requirement not met";
+    }
+
+    function completionSlugForRuleLabel(ruleLabel) {
+      const label = normalizeText(ruleLabel).toLowerCase();
+      const mapping = {
+        "non-structural columns": "column",
+        "walls": "wall",
+        "floors": "floor",
+        "ceilings": "ceiling",
+        "roofs": "roof",
+        "doors": "door",
+        "windows": "window",
+        "plumbing fixtures": "plumbing_fixture",
+        "furniture": "furniture",
+        "curtain walls": "curtain_wall",
+        "linked files": "linked_cad",
+        "grids": "grid",
+        "levels": "level",
+        "stairs": "stair",
+        "railings": "railing",
+        "rooms": "room",
+        "views/sheets": "view_sheet"
+      };
+      return mapping[label] || "";
+    }
+
+    function completionLabelForSlug(slug) {
+      const normalized = normalizeText(slug).toLowerCase();
+      const mapping = {
+        "column": "Non-Structural Columns",
+        "wall": "Walls",
+        "floor": "Floors",
+        "ceiling": "Ceilings",
+        "roof": "Roofs",
+        "door": "Doors",
+        "window": "Windows",
+        "plumbing_fixture": "Plumbing Fixtures",
+        "furniture": "Furniture",
+        "curtain_wall": "Curtain Walls",
+        "linked_cad": "Linked Files",
+        "grid": "Grids",
+        "level": "Levels",
+        "stair": "Stairs",
+        "railing": "Railings",
+        "room": "Rooms",
+        "view_sheet": "Views/Sheets"
+      };
+      return mapping[normalized] || "Completion";
+    }
+
+    function completionSlugs() {
+      return [
+        "column",
+        "wall",
+        "floor",
+        "ceiling",
+        "roof",
+        "door",
+        "window",
+        "plumbing_fixture",
+        "furniture",
+        "curtain_wall",
+        "linked_cad",
+        "grid",
+        "level",
+        "stair",
+        "railing",
+        "room",
+        "view_sheet"
+      ];
+    }
+
+    function findCompletionSlugInPart(partText) {
+      const lower = normalizeText(partText).toLowerCase();
+      for (const slug of completionSlugs()) {
+        const under = "completion_" + slug + "_";
+        const colon = "completion_" + slug + ":";
+        if (lower.indexOf(under) === 0 || lower.indexOf(colon) === 0) {
+          return slug;
+        }
+      }
+      return "";
+    }
+
+    function buildCompletionRowsFromBaselineDelta(sourceRows) {
+      const syntheticRows = [];
+      const seen = new Set();
+      for (const row of sourceRows || []) {
+        if (!isTeacherBaselineDeltaRow(row)) continue;
+        const summary = normalizeText(row.issue_detail);
+        if (!summary) continue;
+
+        const parts = summary.split(/\s*;\s*/).map(part => normalizeText(part)).filter(Boolean);
+        for (const part of parts) {
+          const slug = findCompletionSlugInPart(part);
+          if (!slug) continue;
+
+          const label = completionLabelForSlug(slug);
+          const detailText = part;
+          const dedupeKey = [
+            issueScopeKey(row),
+            slug,
+            detailText.toLowerCase()
+          ].join("||");
+          if (seen.has(dedupeKey)) continue;
+          seen.add(dedupeKey);
+
+          syntheticRows.push({
+            run_id: row.run_id,
+            run_timestamp_utc: row.run_timestamp_utc,
+            assignment_code: row.assignment_code,
+            assignment_name: row.assignment_name,
+            report_label: row.report_label,
+            source_tool: row.source_tool,
+            workflow_mode: row.workflow_mode,
+            selected_groups: row.selected_groups,
+            selected_rules: row.selected_rules,
+            student_id: row.student_id,
+            student_name: row.student_name,
+            file_name: row.file_name,
+            file_path: row.file_path,
+            rule_group: "Completion",
+            rule_name: label,
+            category: "completion",
+            status: "fail",
+            issue_type: "completion_missing_category",
+            issue_detail: detailText,
+            affected_element_count: "",
+            element_ids: "",
+            severity: "warning"
+          });
+        }
+      }
+      return syntheticRows;
+    }
+
+    function buildIssueDetailVisibleRows(issueRows) {
+      const completionFromBaselineRows = buildCompletionRowsFromBaselineDelta(issueRows);
+      const detailRows = (issueRows || []).filter(r => {
+        const isCompletion = normalizeText(r && r.rule_group).toLowerCase() === "completion";
+        const detailText = normalizeText(r && r.issue_detail);
+        // Hide instructor-only generic completion rows on student dashboard.
+        if (isCompletion && isGenericCompletionFallback(detailText)) return false;
+        const hasDetail = normalizeText(r && r.issue_detail) !== "";
+        return hasDetail || isOtherRuleGroup(r);
+      }).concat(completionFromBaselineRows);
+      return detailRows.filter(r => !isTeacherBaselineDeltaRow(r));
+    }
+
+    function parseCompletionCounts(detailText) {
+      const text = normalizeText(detailText);
+      const studentPatterns = [
+        /(?:student|current|actual|found)\s*[:=]\s*(-?\d+(?:\.\d+)?)/i,
+        /_current\s*[:=]\s*(-?\d+(?:\.\d+)?)/i
+      ];
+      const baselinePatterns = [
+        /(?:baseline|target|required|teacher)\s*[:=]\s*(-?\d+(?:\.\d+)?)/i,
+        /_baseline\s*[:=]\s*(-?\d+(?:\.\d+)?)/i
+      ];
+      const tolerancePatterns = [
+        /(?:tolerance|tolerant|ratio|percent|pct)\s*[:=]\s*(-?\d+(?:\.\d+)?)/i,
+        /_tolerance\s*[:=]\s*(-?\d+(?:\.\d+)?)/i
+      ];
+
+      function matchNumber(patterns) {
+        for (const pattern of patterns) {
+          const m = text.match(pattern);
+          if (m && m[1] != null) {
+            const num = Number(m[1]);
+            if (Number.isFinite(num)) return num;
+          }
+        }
+        return null;
+      }
+
+      let student = matchNumber(studentPatterns);
+      let baseline = matchNumber(baselinePatterns);
+      let tolerancePct = matchNumber(tolerancePatterns);
+
+      if (tolerancePct != null && Math.abs(tolerancePct) <= 1) {
+        tolerancePct = tolerancePct * 100;
+      }
+
+      if ((student == null || baseline == null) && text) {
+        const looseNums = text.match(/-?\d+(?:\.\d+)?/g);
+        if (looseNums && looseNums.length >= 2) {
+          if (student == null) {
+            const n = Number(looseNums[0]);
+            student = Number.isFinite(n) ? n : student;
+          }
+          if (baseline == null) {
+            const n = Number(looseNums[1]);
+            baseline = Number.isFinite(n) ? n : baseline;
+          }
+        }
+      }
+
+      if (tolerancePct == null && baseline && baseline !== 0 && student != null) {
+        tolerancePct = (Math.abs(student - baseline) / Math.abs(baseline)) * 100;
+      }
+
+      return {
+        student: student,
+        baseline: baseline,
+        tolerancePct: tolerancePct
+      };
+    }
+
+    function formatCountForDisplay(value) {
+      if (!Number.isFinite(value)) return "?";
+      if (Math.round(value) === value) return String(Math.round(value));
+      return value.toFixed(2).replace(/\.00$/, "");
+    }
+
+    function formatCompletionIssueDetailHtml(detailText, ruleLabel) {
+      const parsed = parseCompletionCounts(detailText);
+      if (parsed.student == null || parsed.baseline == null) {
+        return formatIssueDetailHtml(detailText);
+      }
+
+      const studentText = formatCountForDisplay(parsed.student);
+      const baselineText = formatCountForDisplay(parsed.baseline);
+      const toleranceText = Number.isFinite(parsed.tolerancePct)
+        ? formatCountForDisplay(Number(parsed.tolerancePct.toFixed(1)))
+        : "?";
+
+      const line1 = "<span class=\"issue-detail-label\">ELEMENT COUNT:</span> student=" + escHtml(studentText) + " baseline=" + escHtml(baselineText);
+
+      let line2Text = "Element count exceeds tolerance threshold. Please review the model for duplicate, unnecessary, or incorrectly placed elements.";
+      if (parsed.student === 0 && parsed.baseline > 0) {
+        line2Text = "No " + normalizeText(ruleLabel) + " found in the model";
+      }
+      const line2 = "<span class=\"issue-detail-label\">DESCRIPTION:</span> " + escHtml(line2Text);
+
+      return line1 + "<br>" + line2;
+    }
+
+    function extractCompletionBaselineDetail(summaryText, ruleLabel) {
+      const summary = normalizeText(summaryText);
+      if (!summary) return "";
+
+      const slug = completionSlugForRuleLabel(ruleLabel);
+      if (!slug) return summary;
+
+      const parts = summary.split(/\s*;\s*/).map(part => normalizeText(part)).filter(Boolean);
+      const prefix = "completion_" + slug + "_";
+      const matches = parts.filter(part => part.toLowerCase().indexOf(prefix) === 0);
+
+      if (matches.length) {
+        return matches.join("; ");
+      }
+
+      const directPrefix = "completion_" + slug + ":";
+      const directMatches = parts.filter(part => part.toLowerCase().indexOf(directPrefix) === 0);
+      if (directMatches.length) {
+        return directMatches.join("; ");
+      }
+
+      return summary;
+    }
+
+    function formatIssueDetailHtml(detailText) {
+      const text = normalizeText(detailText);
+      if (!text) return "";
+
+      const affectedTypeMatch = text.match(/^([^:]+):\s*(.+)$/);
+      let affectedType = "";
+      let description = text;
+
+      if (affectedTypeMatch) {
+        affectedType = normalizeText(affectedTypeMatch[1]);
+        description = normalizeText(affectedTypeMatch[2]);
+      }
+
+      let expectedFormat = "";
+      const expectedMatch = description.match(/^(.*?)(?:\.\s*)?Expected:\s*(.+)$/i);
+      if (expectedMatch) {
+        description = normalizeText(expectedMatch[1]).replace(/[.:;\s]+$/, "");
+        expectedFormat = normalizeText(expectedMatch[2]);
+      }
+
+      if (!affectedType && !expectedFormat) {
+        return escHtml(text).replace(/;\s*/g, ";<br>");
+      }
+
+      const lines = [];
+      if (affectedType) {
+        lines.push("<span class=\"issue-detail-label\">Affected Type:</span>" + escHtml(affectedType));
+      }
+      if (description) {
+        lines.push("<span class=\"issue-detail-label\">Description:</span><span class=\"issue-detail-description\">" + escHtml(description).replace(/;\s*/g, ";<br>") + "</span>");
+      }
+      if (expectedFormat) {
+        lines.push("<span class=\"issue-detail-label\">Expected naming format:</span>" + escHtml(expectedFormat));
+      }
+      return lines.join("<br>");
+    }
+
+    function renderIssueDetail(issueRows) {
+      const tbody = document.getElementById("issueDetailTableBody");
+      const detailRows = buildIssueDetailVisibleRows(issueRows);
+
+      const visibleRows = detailRows;
+
+      if (!visibleRows.length) {
+        tbody.innerHTML = "<tr><td colspan='5' style='color:var(--muted);padding:16px'>No issue detail rows found. Run Batch Check to generate naming issue details.</td></tr>";
+        return;
+      }
+
+      const groupedRows = new Map();
+      const orderedGroups = [];
+      for (const row of visibleRows) {
+        const groupName = normalizeText(row.rule_group) || "Other";
+        if (!groupedRows.has(groupName)) {
+          groupedRows.set(groupName, []);
+          orderedGroups.push(groupName);
+        }
+        groupedRows.get(groupName).push(row);
+      }
+
+      let rowNumber = 0;
+      const rows_html = orderedGroups.map(groupName => {
+        const groupColor = issueRowColor(groupName);
+        const groupHeader = `<tr class="issue-group-row"><td colspan="5">Rule Group: ${escHtml(displayRuleGroupName(groupName))}</td></tr>`;
+        const groupItems = (groupedRows.get(groupName) || []).map((r) => {
+        rowNumber += 1;
+        const ruleLabel = normalizeText(r.rule_name) || "(blank)";
+        const sevClass = normalizeSeverity(r.severity) === "error" ? "sev-error"
+                        : normalizeSeverity(r.severity) === "warning" ? "sev-warning"
+                        : "sev-info";
+        const countCell = r.affected_element_count ? `<span class="${sevClass}">${escHtml(r.affected_element_count)}</span>` : "";
+
+        let idsCell = "";
+        if (r.element_ids && r.element_ids.trim()) {
+          const idsText = r.element_ids.trim();
+          if (idsText.toUpperCase() === "N/A") {
+            idsCell = `<span class="sev-info">N/A</span>`;
+          } else {
+            const ids = parseElementIds(idsText);
+            if (ids.length) {
+              idsCell = `<div class="element-id-list">${ids.map(id => {
+                const safeId = escHtml(id);
+                return `<button type="button" class="element-id-btn" title="Copy Element ID ${safeId}" onclick="copyText(this,'${safeId.replace(/'/g, "&#39;")}')">${safeId}</button>`;
+              }).join("")}</div>`;
+            }
+          }
+        }
+        let detailText = normalizeText(r.issue_detail);
+        if (!detailText && isOtherRuleGroup(r)) {
+          detailText = normalizeText(r.issue_type) || normalizeText(r.rule_name) || "Issue flagged in Other group (no detail text provided in CSV).";
+        }
+        const detailHtml = normalizeText(r.rule_group).toLowerCase() === "completion"
+          ? formatCompletionIssueDetailHtml(detailText, ruleLabel)
+          : formatIssueDetailHtml(detailText);
+
+        return `<tr>
+          <td style="background:${groupColor}">${rowNumber}</td>
+          <td style="background:${groupColor}">${escHtml(ruleLabel)}</td>
+          <td style="background:${groupColor}">${detailHtml}</td>
+          <td style="text-align:center;background:${groupColor}">${countCell}</td>
+          <td style="background:${groupColor}">${idsCell}</td>
+        </tr>`;
+        }).join("");
+
+        return groupHeader + groupItems;
+      }).join("");
+
+      tbody.innerHTML = rows_html;
+    }
+
+    function copyText(el, text) {
+      navigator.clipboard.writeText(text.replace(/&#39;/g, "'")).then(() => {
+        const orig = el.style.background;
+        el.style.background = "var(--pass)";
+        setTimeout(() => { el.style.background = orig; }, 700);
+      }).catch(() => {
+        // Fallback for non-HTTPS contexts
+        const ta = document.createElement("textarea");
+        ta.value = text.replace(/&#39;/g, "'");
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        const orig = el.style.background;
+        el.style.background = "var(--pass)";
+        setTimeout(() => { el.style.background = orig; }, 700);
+      });
+    }
+
+    function renderAll() {
+      if (!normalizeText(activeStudentId || studentFilter.value)) {
+        return;
+      }
+      const assignmentEntries = updateAssignmentSelection(allRows, allIssueRows);
+      const allStudentRows = getStudentScopedRows(allRows);
+      const rows = getFilteredRows();
+      const issueRows = getFilteredIssueRows();
+      destroyCharts();
+      renderAssignmentScoreCards(allStudentRows, assignmentEntries);
+      renderFeedbackTable(rows, issueRows);
+      renderFailByRule(rows);
+      renderScoreTrend(rows);
+      renderIssueCountTrend(issueRows);
+      renderIssuesByFile(issueRows);
+      renderIssueDetail(issueRows);
+    }
+
+    function normalizeCsvRecord(record) {
+      const normalized = {};
+      for (const key in record) {
+        if (!Object.prototype.hasOwnProperty.call(record, key)) continue;
+        normalized[String(key || "").trim().toLowerCase()] = record[key];
+      }
+      return normalized;
+    }
+
+    function valueFrom(record, keys, fallback = "") {
+      const normalized = normalizeCsvRecord(record);
+      for (const key of keys) {
+        const value = normalized[key.toLowerCase()];
+        if (value !== undefined && value !== null && String(value).trim() !== "") {
+          return String(value).trim();
+        }
+      }
+      return fallback;
+    }
+
+    function parseMetricsRow(r) {
+      return {
+        run_id: valueFrom(r, ["run_id"]),
+        run_timestamp_utc: valueFrom(r, ["run_timestamp_utc"]),
+        assignment_code: valueFrom(r, ["assignment_code", "assignment code", "assignment"]),
+        assignment_name: valueFrom(r, ["assignment_name", "assignment name"]),
+        report_label: valueFrom(r, ["report_label"]),
+        source_tool: valueFrom(r, ["source_tool"]),
+        workflow_mode: valueFrom(r, ["workflow_mode"]),
+        selected_groups: valueFrom(r, ["selected_groups"]),
+        selected_rules: valueFrom(r, ["selected_rules"]),
+        student_id: valueFrom(r, ["student_id", "id"]),
+        student_name: valueFrom(r, ["student_name", "student name", "name"]),
+        file_name: valueFrom(r, ["file_name", "file name"]),
+        file_path: valueFrom(r, ["file_path", "file path"]),
+        rule_group: valueFrom(r, ["rule_group", "rule group"]),
+        rule_name: valueFrom(r, ["rule_name", "rule", "warning type"]),
+        category: valueFrom(r, ["category"]),
+        status: valueFrom(r, ["status"]),
+        metric_name: valueFrom(r, ["metric_name"]),
+        metric_value: valueFrom(r, ["metric_value", "metric value"]),
+        unit: valueFrom(r, ["unit"])
+      };
+    }
+
+    function parseIssueRow(r) {
+      return {
+        run_id: valueFrom(r, ["run_id"]),
+        run_timestamp_utc: valueFrom(r, ["run_timestamp_utc"]),
+        assignment_code: valueFrom(r, ["assignment_code", "assignment code", "assignment"]),
+        assignment_name: valueFrom(r, ["assignment_name", "assignment name"]),
+        report_label: valueFrom(r, ["report_label"]),
+        source_tool: valueFrom(r, ["source_tool"]),
+        workflow_mode: valueFrom(r, ["workflow_mode"]),
+        selected_groups: valueFrom(r, ["selected_groups"]),
+        selected_rules: valueFrom(r, ["selected_rules"]),
+        student_id: valueFrom(r, ["student_id", "id"]),
+        student_name: valueFrom(r, ["student_name", "student name", "name"]),
+        file_name: valueFrom(r, ["file_name", "file name"]),
+        file_path: valueFrom(r, ["file_path", "file path"]),
+        rule_group: valueFrom(r, ["rule_group", "rule group"]),
+        rule_name: valueFrom(r, ["rule_name", "rule", "warning type"]),
+        category: valueFrom(r, ["category"]),
+        status: valueFrom(r, ["status"]),
+        issue_type: valueFrom(r, ["issue_type", "warning type"]),
+        issue_detail: valueFrom(r, ["issue_detail", "details", "affected elements"]),
+        affected_element_count: valueFrom(r, ["affected_element_count", "affected element count", "warning count"]),
+        element_ids: valueFrom(r, ["element_ids", "element ids"]),
+        severity: valueFrom(r, ["severity"])
+      };
+    }
+
+    csvFile.addEventListener("change", () => {
+      const file = csvFile.files && csvFile.files[0];
+      if (!file) return;
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          allRows = (results.data || []).map(parseMetricsRow);
+          updateStudentFilter(allRows, allIssueRows);
+          renderAll();
+        }
+      });
+    });
+
+    issuesCsvFile.addEventListener("change", () => {
+      const file = issuesCsvFile.files && issuesCsvFile.files[0];
+      if (!file) return;
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          allIssueRows = (results.data || []).map(parseIssueRow);
+          updateStudentFilter(allRows, allIssueRows);
+          renderAll();
+        }
+      });
+    });
+
+    feedbackCsvFile.addEventListener("change", () => {
+      const file = feedbackCsvFile.files && feedbackCsvFile.files[0];
+      if (!file) return;
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          feedbackByKey = new Map();
+          const rows = (results.data || []).map(parseFeedbackRow);
+          for (const row of rows) {
+            upsertFeedbackEntry(row);
+          }
+          feedbackStatusText.textContent = "Feedback CSV loaded.";
+          renderAll();
+        }
+      });
+    });
+
+    renderBtn.addEventListener("click", renderAll);
+    studentFilter.addEventListener("input", renderAll);
+    studentFilter.addEventListener("change", renderAll);
+    trendViewFilter.addEventListener("change", renderAll);
+
+    unlockBtn.addEventListener("click", () => {
+      const studentId = normalizeText(studentIdEntry.value);
+      if (!studentId) {
+        studentIdEntry.focus();
+        return;
+      }
+      openDashboard(studentId);
+      renderAll();
+    });
+
+    studentIdEntry.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        unlockBtn.click();
+      }
+    });
+
+    if (loadByTokenBtn) {
+      loadByTokenBtn.addEventListener("click", () => {
+        loadTokenPackage();
+      });
+    }
+
+    if (tokenEntry) {
+      tokenEntry.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          loadTokenPackage();
+        }
+      });
+    }
+
+    changeStudentBtn.addEventListener("click", () => {
+      closeDashboard();
+    });
+
+    enableResizableTables();
+    requireStudentId();
+    tryLoadFromQueryToken();
+  </script>
+</body>
+</html>

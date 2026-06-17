@@ -1,0 +1,12 @@
+{
+  "generated_utc": "2026-06-17T16:16:19Z", 
+  "files": {
+    "metrics": "metrics.csv", 
+    "feedback": "feedback.csv", 
+    "issues": "issues.csv"
+  }, 
+  "student_id": "67020544", 
+  "version": 1, 
+  "student_name": "CHAI", 
+  "token": "io9koiePibZkBFmkhFsU4rD95qQ0Fx1F"
+}
