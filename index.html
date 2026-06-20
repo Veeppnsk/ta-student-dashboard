@@ -437,10 +437,6 @@
           <hr style="border:none;border-top:1px solid var(--line);margin:6px 0" />
           <div class="token-grid">
             <div>
-              <label for="packageBaseUrlEntry">Token Package Base URL (Optional)</label>
-              <input id="packageBaseUrlEntry" type="text" placeholder="https://example.com/split_students_YYYYMMDD_HHMMSS/token_packages" autocomplete="off" />
-            </div>
-            <div>
               <label for="tokenEntry">Access Token</label>
               <input id="tokenEntry" type="text" placeholder="Paste your access token" autocomplete="off" />
             </div>
@@ -609,12 +605,12 @@
     let charts = [];
     let activeStudentId = "";
     let selectedAssignmentCodes = new Set();
+    let tokenBaseUrl = "";
 
     const studentGate = document.getElementById("studentGate");
     const dashboardShell = document.getElementById("dashboardShell");
     const studentIdEntry = document.getElementById("studentIdEntry");
     const unlockBtn = document.getElementById("unlockBtn");
-    const packageBaseUrlEntry = document.getElementById("packageBaseUrlEntry");
     const tokenEntry = document.getElementById("tokenEntry");
     const loadByTokenBtn = document.getElementById("loadByTokenBtn");
     const tokenLoadStatus = document.getElementById("tokenLoadStatus");
@@ -708,10 +704,10 @@
     }
 
     async function loadTokenPackage() {
-      const baseUrl = normalizeText(packageBaseUrlEntry && packageBaseUrlEntry.value);
+      const baseUrl = normalizeText(tokenBaseUrl);
       const token = normalizeText(tokenEntry && tokenEntry.value);
       if (!baseUrl || !token) {
-        setTokenStatus("Token mode requires both package base URL and access token.", true);
+        setTokenStatus("Token mode requires a valid base URL in the link and an access token.", true);
         return;
       }
 
@@ -775,9 +771,9 @@
       const params = getQueryParams();
       const token = normalizeText(params.get("token"));
       const baseUrl = normalizeText(params.get("base"));
-      if (!token || !baseUrl) return;
+      if (baseUrl) tokenBaseUrl = baseUrl;
+      if (!token || !tokenBaseUrl) return;
       if (tokenEntry) tokenEntry.value = token;
-      if (packageBaseUrlEntry) packageBaseUrlEntry.value = baseUrl;
       await loadTokenPackage();
     }
 
