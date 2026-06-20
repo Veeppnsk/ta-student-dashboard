@@ -1,0 +1,481 @@
+{
+  "version": 1, 
+  "package_root": "D:\\MY REVIT EXTENSION\\TA.extension\\ta-student-dashboard\\split_students_20260620_152554\\token_packages", 
+  "generated_utc": "2026-06-20T15:25:54Z", 
+  "students": [
+    {
+      "student_name": "KITTISAK", 
+      "token": "x7O25oSDPagTaxeLCsgr18V6oXlVhacN", 
+      "manifest_relative_path": "token_packages/x7O25oSDPagTaxeLCsgr18V6oXlVhacN/manifest.json", 
+      "rows": {
+        "issues": 16, 
+        "metrics": 31, 
+        "feedback": 0
+      }, 
+      "student_id": "12345678"
+    }, 
+    {
+      "student_name": "BULATHAT", 
+      "token": "xXOsOty8JnxdqmAHiUXtX5ec38SK7ySG", 
+      "manifest_relative_path": "token_packages/xXOsOty8JnxdqmAHiUXtX5ec38SK7ySG/manifest.json", 
+      "rows": {
+        "issues": 15, 
+        "metrics": 51, 
+        "feedback": 1
+      }, 
+      "student_id": "66020549"
+    }, 
+    {
+      "student_name": "BHEEM", 
+      "token": "uXdqHsgrXTXyPs8s8Y1x8O0ll6tnh5Bk", 
+      "manifest_relative_path": "token_packages/uXdqHsgrXTXyPs8s8Y1x8O0ll6tnh5Bk/manifest.json", 
+      "rows": {
+        "issues": 17, 
+        "metrics": 55, 
+        "feedback": 2
+      }, 
+      "student_id": "67020444"
+    }, 
+    {
+      "student_name": "BHURIVICH", 
+      "token": "UyQ1u5b6OjL8SpWZzKbGpMKSdbnkz1dw", 
+      "manifest_relative_path": "token_packages/UyQ1u5b6OjL8SpWZzKbGpMKSdbnkz1dw/manifest.json", 
+      "rows": {
+        "issues": 28, 
+        "metrics": 65, 
+        "feedback": 1
+      }, 
+      "student_id": "67020445"
+    }, 
+    {
+      "student_name": "FASAIJASMIN", 
+      "token": "A4isun9QIExi8beyjjxg0NVmJSaiudlC", 
+      "manifest_relative_path": "token_packages/A4isun9QIExi8beyjjxg0NVmJSaiudlC/manifest.json", 
+      "rows": {
+        "issues": 21, 
+        "metrics": 49, 
+        "feedback": 0
+      }, 
+      "student_id": "67020446"
+    }, 
+    {
+      "student_name": "KRIS", 
+      "token": "a1YNzjH5iO3feJZXGbifG91a7QVhNFwl", 
+      "manifest_relative_path": "token_packages/a1YNzjH5iO3feJZXGbifG91a7QVhNFwl/manifest.json", 
+      "rows": {
+        "issues": 17, 
+        "metrics": 49, 
+        "feedback": 1
+      }, 
+      "student_id": "67020447"
+    }, 
+    {
+      "student_name": "MASARUENA", 
+      "token": "yPvKj2wThCgmumSkqdxGkTLxSZjulA0o", 
+      "manifest_relative_path": "token_packages/yPvKj2wThCgmumSkqdxGkTLxSZjulA0o/manifest.json", 
+      "rows": {
+        "issues": 19, 
+        "metrics": 51, 
+        "feedback": 0
+      }, 
+      "student_id": "67020448"
+    }, 
+    {
+      "student_name": "NAPONG", 
+      "token": "RWFN1ivYoGnwUQaKHWTnPC6UDIX7mzM1", 
+      "manifest_relative_path": "token_packages/RWFN1ivYoGnwUQaKHWTnPC6UDIX7mzM1/manifest.json", 
+      "rows": {
+        "issues": 20, 
+        "metrics": 51, 
+        "feedback": 1
+      }, 
+      "student_id": "67020449"
+    }, 
+    {
+      "student_name": "NATTHAPORN", 
+      "token": "PeGlAMTynYfCPLGZpEAmRm3PMmGSQpFK", 
+      "manifest_relative_path": "token_packages/PeGlAMTynYfCPLGZpEAmRm3PMmGSQpFK/manifest.json", 
+      "rows": {
+        "issues": 12, 
+        "metrics": 47, 
+        "feedback": 0
+      }, 
+      "student_id": "67020450"
+    }, 
+    {
+      "student_name": "Peemasorn", 
+      "token": "RG99KmWC3cHmOsnEQHtrxicH3Hx4xRAo", 
+      "manifest_relative_path": "token_packages/RG99KmWC3cHmOsnEQHtrxicH3Hx4xRAo/manifest.json", 
+      "rows": {
+        "issues": 25, 
+        "metrics": 57, 
+        "feedback": 0
+      }, 
+      "student_id": "67020453"
+    }, 
+    {
+      "student_name": "PIMNISA", 
+      "token": "7A46FB9LsyccsMA9Eg5KSONhkaq8NUDy", 
+      "manifest_relative_path": "token_packages/7A46FB9LsyccsMA9Eg5KSONhkaq8NUDy/manifest.json", 
+      "rows": {
+        "issues": 19, 
+        "metrics": 51, 
+        "feedback": 1
+      }, 
+      "student_id": "67020455"
+    }, 
+    {
+      "student_name": "Prod", 
+      "token": "GmDDJ30ujqpOMJPDaM9Fb0JCPlhkEzoO", 
+      "manifest_relative_path": "token_packages/GmDDJ30ujqpOMJPDaM9Fb0JCPlhkEzoO/manifest.json", 
+      "rows": {
+        "issues": 12, 
+        "metrics": 43, 
+        "feedback": 0
+      }, 
+      "student_id": "67020459"
+    }, 
+    {
+      "student_name": "Settapong", 
+      "token": "7v4yJaVEuCdh6KSI7DkILpzTqIg8fzfM", 
+      "manifest_relative_path": "token_packages/7v4yJaVEuCdh6KSI7DkILpzTqIg8fzfM/manifest.json", 
+      "rows": {
+        "issues": 7, 
+        "metrics": 26, 
+        "feedback": 0
+      }, 
+      "student_id": "67020461"
+    }, 
+    {
+      "student_name": "SOTHITA", 
+      "token": "bfGrnKIbi74xodNoFHuL6LBe7CdQ8dlv", 
+      "manifest_relative_path": "token_packages/bfGrnKIbi74xodNoFHuL6LBe7CdQ8dlv/manifest.json", 
+      "rows": {
+        "issues": 11, 
+        "metrics": 43, 
+        "feedback": 0
+      }, 
+      "student_id": "67020463"
+    }, 
+    {
+      "student_name": "TAMISA", 
+      "token": "wpRrI2AoNLjy9AkpG8kwDyollJpEepWb", 
+      "manifest_relative_path": "token_packages/wpRrI2AoNLjy9AkpG8kwDyollJpEepWb/manifest.json", 
+      "rows": {
+        "issues": 14, 
+        "metrics": 49, 
+        "feedback": 1
+      }, 
+      "student_id": "67020464"
+    }, 
+    {
+      "student_name": "THATCHAKORN", 
+      "token": "tDPCVHzY7miA7vx2AZqn64f16b2ZQcJO", 
+      "manifest_relative_path": "token_packages/tDPCVHzY7miA7vx2AZqn64f16b2ZQcJO/manifest.json", 
+      "rows": {
+        "issues": 26, 
+        "metrics": 47, 
+        "feedback": 0
+      }, 
+      "student_id": "67020466"
+    }, 
+    {
+      "student_name": "THEINGAR PHOOE WAI", 
+      "token": "yJi2vzN9bOApD9K0cLKabjwum4jy3spy", 
+      "manifest_relative_path": "token_packages/yJi2vzN9bOApD9K0cLKabjwum4jy3spy/manifest.json", 
+      "rows": {
+        "issues": 17, 
+        "metrics": 47, 
+        "feedback": 0
+      }, 
+      "student_id": "67020467"
+    }, 
+    {
+      "student_name": "THUNPYAESONE", 
+      "token": "0RQ6Bfkr3B6fo1DWTKLy7AVqlQ41fOow", 
+      "manifest_relative_path": "token_packages/0RQ6Bfkr3B6fo1DWTKLy7AVqlQ41fOow/manifest.json", 
+      "rows": {
+        "issues": 8, 
+        "metrics": 35, 
+        "feedback": 0
+      }, 
+      "student_id": "67020468"
+    }, 
+    {
+      "student_name": "WATCHARANAN", 
+      "token": "xDOu24pGigHeLn4RoBrkOTJwUDjXFDbC", 
+      "manifest_relative_path": "token_packages/xDOu24pGigHeLn4RoBrkOTJwUDjXFDbC/manifest.json", 
+      "rows": {
+        "issues": 17, 
+        "metrics": 47, 
+        "feedback": 1
+      }, 
+      "student_id": "67020469"
+    }, 
+    {
+      "student_name": "Bannawat", 
+      "token": "hcmexOKxktAVsJIU5DPHBIbmiiEelmcS", 
+      "manifest_relative_path": "token_packages/hcmexOKxktAVsJIU5DPHBIbmiiEelmcS/manifest.json", 
+      "rows": {
+        "issues": 11, 
+        "metrics": 47, 
+        "feedback": 1
+      }, 
+      "student_id": "67020542"
+    }, 
+    {
+      "student_name": "Bhumimongkol", 
+      "token": "CmWYLA8LhAYjKQxwxnhqxvJu4rck6UaE", 
+      "manifest_relative_path": "token_packages/CmWYLA8LhAYjKQxwxnhqxvJu4rck6UaE/manifest.json", 
+      "rows": {
+        "issues": 18, 
+        "metrics": 55, 
+        "feedback": 1
+      }, 
+      "student_id": "67020543"
+    }, 
+    {
+      "student_name": "CHAI", 
+      "token": "uM9Whj6LxZez2nIqMH9mpVl0hVsbDbwV", 
+      "manifest_relative_path": "token_packages/uM9Whj6LxZez2nIqMH9mpVl0hVsbDbwV/manifest.json", 
+      "rows": {
+        "issues": 7, 
+        "metrics": 43, 
+        "feedback": 0
+      }, 
+      "student_id": "67020544"
+    }, 
+    {
+      "student_name": "CHANTAVAT", 
+      "token": "ChSqBvuEcQ2AcxdsCsrky5jWBtR3riCM", 
+      "manifest_relative_path": "token_packages/ChSqBvuEcQ2AcxdsCsrky5jWBtR3riCM/manifest.json", 
+      "rows": {
+        "issues": 13, 
+        "metrics": 47, 
+        "feedback": 0
+      }, 
+      "student_id": "67020545"
+    }, 
+    {
+      "student_name": "CHAWANRAT", 
+      "token": "k3waRAmJRHu0zzPuQveD5CqsDh87xkQK", 
+      "manifest_relative_path": "token_packages/k3waRAmJRHu0zzPuQveD5CqsDh87xkQK/manifest.json", 
+      "rows": {
+        "issues": 9, 
+        "metrics": 43, 
+        "feedback": 0
+      }, 
+      "student_id": "67020546"
+    }, 
+    {
+      "student_name": "Jirat", 
+      "token": "wyUnmttx8aDHQbHdCBxweKh03dQZEUIz", 
+      "manifest_relative_path": "token_packages/wyUnmttx8aDHQbHdCBxweKh03dQZEUIz/manifest.json", 
+      "rows": {
+        "issues": 22, 
+        "metrics": 67, 
+        "feedback": 1
+      }, 
+      "student_id": "67020550"
+    }, 
+    {
+      "student_name": "PANITPOL", 
+      "token": "53UFYzdmJrX81aN0ruJrxRoj3U26cTOK", 
+      "manifest_relative_path": "token_packages/53UFYzdmJrX81aN0ruJrxRoj3U26cTOK/manifest.json", 
+      "rows": {
+        "issues": 19, 
+        "metrics": 53, 
+        "feedback": 1
+      }, 
+      "student_id": "67020552"
+    }, 
+    {
+      "student_name": "PAWARISA", 
+      "token": "15Wc8EoZePzymSCO0EtuC4wYumlrWXTv", 
+      "manifest_relative_path": "token_packages/15Wc8EoZePzymSCO0EtuC4wYumlrWXTv/manifest.json", 
+      "rows": {
+        "issues": 22, 
+        "metrics": 51, 
+        "feedback": 0
+      }, 
+      "student_id": "67020554"
+    }, 
+    {
+      "student_name": "PHITCHAYA", 
+      "token": "kp1DxHufPKmXryOVPw3wG3YinSmq3OZL", 
+      "manifest_relative_path": "token_packages/kp1DxHufPKmXryOVPw3wG3YinSmq3OZL/manifest.json", 
+      "rows": {
+        "issues": 19, 
+        "metrics": 59, 
+        "feedback": 1
+      }, 
+      "student_id": "67020556"
+    }, 
+    {
+      "student_name": "PITCHANAN", 
+      "token": "7hjDWSPERaCrRnlQacqbKm9xlQm1mMwE", 
+      "manifest_relative_path": "token_packages/7hjDWSPERaCrRnlQacqbKm9xlQm1mMwE/manifest.json", 
+      "rows": {
+        "issues": 12, 
+        "metrics": 47, 
+        "feedback": 1
+      }, 
+      "student_id": "67020557"
+    }, 
+    {
+      "student_name": "Prapada", 
+      "token": "bSrXcCI3T0GgbE6rGOFSeYbtBsdXDITJ", 
+      "manifest_relative_path": "token_packages/bSrXcCI3T0GgbE6rGOFSeYbtBsdXDITJ/manifest.json", 
+      "rows": {
+        "issues": 23, 
+        "metrics": 57, 
+        "feedback": 1
+      }, 
+      "student_id": "67020559"
+    }, 
+    {
+      "student_name": "RATTANAMON", 
+      "token": "nePy8tugs602fzoG7jqLXKv819LiCbic", 
+      "manifest_relative_path": "token_packages/nePy8tugs602fzoG7jqLXKv819LiCbic/manifest.json", 
+      "rows": {
+        "issues": 22, 
+        "metrics": 59, 
+        "feedback": 1
+      }, 
+      "student_id": "67020562"
+    }, 
+    {
+      "student_name": "Suphawit", 
+      "token": "3tUJGRMCZ9CdAFNQcCQBT2h6ae1CI3Xq", 
+      "manifest_relative_path": "token_packages/3tUJGRMCZ9CdAFNQcCQBT2h6ae1CI3Xq/manifest.json", 
+      "rows": {
+        "issues": 18, 
+        "metrics": 51, 
+        "feedback": 1
+      }, 
+      "student_id": "67020563"
+    }, 
+    {
+      "student_name": "THANWARAT", 
+      "token": "mVAcbe6JcrwitvYP5b8OND3JLEb30tuU", 
+      "manifest_relative_path": "token_packages/mVAcbe6JcrwitvYP5b8OND3JLEb30tuU/manifest.json", 
+      "rows": {
+        "issues": 17, 
+        "metrics": 47, 
+        "feedback": 1
+      }, 
+      "student_id": "67020565"
+    }, 
+    {
+      "student_name": "Tinudda", 
+      "token": "HPVs2GaYtCOyviCMT8EY1O7zccZzqsWB", 
+      "manifest_relative_path": "token_packages/HPVs2GaYtCOyviCMT8EY1O7zccZzqsWB/manifest.json", 
+      "rows": {
+        "issues": 13, 
+        "metrics": 55, 
+        "feedback": 1
+      }, 
+      "student_id": "67020566"
+    }, 
+    {
+      "student_name": "WIRITPHOL", 
+      "token": "LYWWb6hgUXPhY1VXMWZVpER0vjQouKbd", 
+      "manifest_relative_path": "token_packages/LYWWb6hgUXPhY1VXMWZVpER0vjQouKbd/manifest.json", 
+      "rows": {
+        "issues": 12, 
+        "metrics": 49, 
+        "feedback": 1
+      }, 
+      "student_id": "67020570"
+    }, 
+    {
+      "student_name": "YANISA", 
+      "token": "zxDBR9kJIP8BTF1vnuJW80vdUZB1oJqQ", 
+      "manifest_relative_path": "token_packages/zxDBR9kJIP8BTF1vnuJW80vdUZB1oJqQ/manifest.json", 
+      "rows": {
+        "issues": 16, 
+        "metrics": 51, 
+        "feedback": 0
+      }, 
+      "student_id": "67020571"
+    }, 
+    {
+      "student_name": "PARIPAT", 
+      "token": "0auUZ2SLqkfDZeaayhYcywSzVBwLTd4a", 
+      "manifest_relative_path": "token_packages/0auUZ2SLqkfDZeaayhYcywSzVBwLTd4a/manifest.json", 
+      "rows": {
+        "issues": 25, 
+        "metrics": 55, 
+        "feedback": 1
+      }, 
+      "student_id": "67020580"
+    }, 
+    {
+      "student_name": "PATTARAVEE", 
+      "token": "k7AxmIvZXqeNefZMztUdhdLGGAWwGI8H", 
+      "manifest_relative_path": "token_packages/k7AxmIvZXqeNefZMztUdhdLGGAWwGI8H/manifest.json", 
+      "rows": {
+        "issues": 18, 
+        "metrics": 51, 
+        "feedback": 0
+      }, 
+      "student_id": "67020581"
+    }, 
+    {
+      "student_name": "YEWINTAUNG", 
+      "token": "0c8zGr9Bk7eeOKcvw8Lnp2O0PkTUVAMY", 
+      "manifest_relative_path": "token_packages/0c8zGr9Bk7eeOKcvw8Lnp2O0PkTUVAMY/manifest.json", 
+      "rows": {
+        "issues": 16, 
+        "metrics": 51, 
+        "feedback": 1
+      }, 
+      "student_id": "67020583"
+    }, 
+    {
+      "student_name": "HADISA", 
+      "token": "7ozNOKpBMVo20Cng8DV0SZ0HsLuIS5v5", 
+      "manifest_relative_path": "token_packages/7ozNOKpBMVo20Cng8DV0SZ0HsLuIS5v5/manifest.json", 
+      "rows": {
+        "issues": 18, 
+        "metrics": 51, 
+        "feedback": 0
+      }, 
+      "student_id": "68950074"
+    }, 
+    {
+      "student_name": "RECKLEBEN", 
+      "token": "APgvdoj9qdbWkeifIoprK2VuRWeGBTwc", 
+      "manifest_relative_path": "token_packages/APgvdoj9qdbWkeifIoprK2VuRWeGBTwc/manifest.json", 
+      "rows": {
+        "issues": 20, 
+        "metrics": 51, 
+        "feedback": 1
+      }, 
+      "student_id": "68950076"
+    }, 
+    {
+      "student_name": "Philipp", 
+      "token": "KbRxPBfJA5JdCUkLccrkA8L34RwsNhuo", 
+      "manifest_relative_path": "token_packages/KbRxPBfJA5JdCUkLccrkA8L34RwsNhuo/manifest.json", 
+      "rows": {
+        "issues": 15, 
+        "metrics": 51, 
+        "feedback": 1
+      }, 
+      "student_id": "68950077"
+    }, 
+    {
+      "student_name": "Merkl", 
+      "token": "8hQYC1EZ2AcHRnxkTH6HjlvWFj1540QW", 
+      "manifest_relative_path": "token_packages/8hQYC1EZ2AcHRnxkTH6HjlvWFj1540QW/manifest.json", 
+      "rows": {
+        "issues": 23, 
+        "metrics": 51, 
+        "feedback": 1
+      }, 
+      "student_id": "68950081"
+    }
+  ], 
+  "output_root": "D:\\MY REVIT EXTENSION\\TA.extension\\ta-student-dashboard\\split_students_20260620_152554"
+}

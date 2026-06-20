@@ -1,0 +1,12 @@
+{
+  "version": 1, 
+  "student_name": "TAMISA", 
+  "files": {
+    "issues": "issues.csv", 
+    "metrics": "metrics.csv", 
+    "feedback": "feedback.csv"
+  }, 
+  "token": "wpRrI2AoNLjy9AkpG8kwDyollJpEepWb", 
+  "generated_utc": "2026-06-20T15:25:54Z", 
+  "student_id": "67020464"
+}

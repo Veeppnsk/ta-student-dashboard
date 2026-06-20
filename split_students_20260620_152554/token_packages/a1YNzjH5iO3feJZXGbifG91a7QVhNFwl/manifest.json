@@ -1,0 +1,12 @@
+{
+  "version": 1, 
+  "student_name": "KRIS", 
+  "files": {
+    "issues": "issues.csv", 
+    "metrics": "metrics.csv", 
+    "feedback": "feedback.csv"
+  }, 
+  "token": "a1YNzjH5iO3feJZXGbifG91a7QVhNFwl", 
+  "generated_utc": "2026-06-20T15:25:54Z", 
+  "student_id": "67020447"
+}

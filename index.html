@@ -468,6 +468,8 @@
             <p class="method-note">Enter your ID and upload CSV to view your dashboard.</p>
             <label for="studentIdEntry">Student ID</label>
             <input id="studentIdEntry" type="text" placeholder="Enter your student ID" autocomplete="off" />
+            <label for="offlinePasswordEntry">Offline Password</label>
+            <input id="offlinePasswordEntry" type="text" placeholder="Enter your 4-letter password" maxlength="4" autocomplete="off" />
             <div class="offline-upload-grid">
               <div>
                 <label for="csvFile">Metrics CSV</label>
@@ -482,6 +484,7 @@
                 <input id="feedbackCsvFile" type="file" accept=".csv" />
               </div>
             </div>
+            <div id="offlineAuthStatus" class="token-status"></div>
             <button id="unlockBtn">View My Dashboard</button>
           </div>
           <hr style="border:none;border-top:1px solid var(--line);margin:6px 0" />
@@ -646,11 +649,13 @@
     const studentGate = document.getElementById("studentGate");
     const dashboardShell = document.getElementById("dashboardShell");
     const studentIdEntry = document.getElementById("studentIdEntry");
+    const offlinePasswordEntry = document.getElementById("offlinePasswordEntry");
+    const offlineAuthStatus = document.getElementById("offlineAuthStatus");
     const unlockBtn = document.getElementById("unlockBtn");
     const tokenEntry = document.getElementById("tokenEntry");
     const loadByTokenBtn = document.getElementById("loadByTokenBtn");
     const tokenLoadStatus = document.getElementById("tokenLoadStatus");
-    const TOKEN_PACKAGE_BASE_URL = "https://veeppnsk.github.io/ta-student-dashboard/split_students_20260617_161619/token_packages";
+    const TOKEN_PACKAGE_BASE_URL = "https://veeppnsk.github.io/ta-student-dashboard/split_students_20260620_152554/token_packages";
     const activeStudentLabel = document.getElementById("activeStudentLabel");
     const csvFile = document.getElementById("csvFile");
     const issuesCsvFile = document.getElementById("issuesCsvFile");
@@ -677,6 +682,30 @@
 
     function normalizeText(v) {
       return String(v || "").trim();
+    }
+
+    function setOfflineAuthStatus(message, isError) {
+      if (!offlineAuthStatus) return;
+      offlineAuthStatus.textContent = message || "";
+      offlineAuthStatus.style.color = isError ? "#c0392b" : "var(--muted)";
+    }
+
+    function generateOfflinePassword(studentId) {
+      const text = normalizeText(studentId).toUpperCase();
+      if (!text) return "";
+
+      let seed = 2166136261 >>> 0;
+      for (let i = 0; i < text.length; i++) {
+        seed ^= text.charCodeAt(i);
+        seed = Math.imul(seed, 16777619) >>> 0;
+      }
+
+      let result = "";
+      for (let i = 0; i < 4; i++) {
+        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+        result += String.fromCharCode(65 + (seed % 26));
+      }
+      return result;
     }
 
     function setActiveStudent(studentId) {
@@ -2335,10 +2364,21 @@
 
     unlockBtn.addEventListener("click", () => {
       const studentId = normalizeText(studentIdEntry.value);
+      const enteredPassword = normalizeText(offlinePasswordEntry && offlinePasswordEntry.value).toUpperCase();
       if (!studentId) {
+        setOfflineAuthStatus("Please enter your student ID.", true);
         studentIdEntry.focus();
         return;
       }
+
+      const expectedPassword = generateOfflinePassword(studentId);
+      if (!enteredPassword || enteredPassword !== expectedPassword) {
+        setOfflineAuthStatus("Incorrect offline password for this student ID.", true);
+        if (offlinePasswordEntry) offlinePasswordEntry.focus();
+        return;
+      }
+
+      setOfflineAuthStatus("Offline ID/password verified.", false);
       openDashboard(studentId);
       renderAll();
     });

@@ -1,0 +1,12 @@
+{
+  "version": 1, 
+  "student_name": "Tinudda", 
+  "files": {
+    "issues": "issues.csv", 
+    "metrics": "metrics.csv", 
+    "feedback": "feedback.csv"
+  }, 
+  "token": "HPVs2GaYtCOyviCMT8EY1O7zccZzqsWB", 
+  "generated_utc": "2026-06-20T15:25:54Z", 
+  "student_id": "67020566"
+}

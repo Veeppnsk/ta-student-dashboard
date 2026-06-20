@@ -1,0 +1,12 @@
+{
+  "version": 1, 
+  "student_name": "Settapong", 
+  "files": {
+    "issues": "issues.csv", 
+    "metrics": "metrics.csv", 
+    "feedback": "feedback.csv"
+  }, 
+  "token": "7v4yJaVEuCdh6KSI7DkILpzTqIg8fzfM", 
+  "generated_utc": "2026-06-20T15:25:54Z", 
+  "student_id": "67020461"
+}

@@ -1,0 +1,12 @@
+{
+  "version": 1, 
+  "student_name": "Merkl", 
+  "files": {
+    "issues": "issues.csv", 
+    "metrics": "metrics.csv", 
+    "feedback": "feedback.csv"
+  }, 
+  "token": "8hQYC1EZ2AcHRnxkTH6HjlvWFj1540QW", 
+  "generated_utc": "2026-06-20T15:25:54Z", 
+  "student_id": "68950081"
+}

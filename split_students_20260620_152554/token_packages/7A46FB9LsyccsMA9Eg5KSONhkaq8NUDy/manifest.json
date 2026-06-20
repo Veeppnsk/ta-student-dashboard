@@ -1,0 +1,12 @@
+{
+  "version": 1, 
+  "student_name": "PIMNISA", 
+  "files": {
+    "issues": "issues.csv", 
+    "metrics": "metrics.csv", 
+    "feedback": "feedback.csv"
+  }, 
+  "token": "7A46FB9LsyccsMA9Eg5KSONhkaq8NUDy", 
+  "generated_utc": "2026-06-20T15:25:54Z", 
+  "student_id": "67020455"
+}
