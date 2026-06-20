@@ -437,11 +437,11 @@
           <hr style="border:none;border-top:1px solid var(--line);margin:6px 0" />
           <div class="token-grid">
             <div>
-              <label for="tokenEntry">Access Token</label>
+              <label for="tokenEntry">Access Token (Optional)</label>
               <input id="tokenEntry" type="text" placeholder="Paste your access token" autocomplete="off" />
             </div>
             <button id="loadByTokenBtn" type="button">Load By Token</button>
-            <div id="tokenLoadStatus" class="token-status">Optional online mode: use your instructor-provided token package link.</div>
+            <div id="tokenLoadStatus" class="token-status">Enter your access token to load your data online.</div>
           </div>
         </div>
         <div class="gate-help">Tip: If the CSV uses names instead of IDs, type the exact student name used in the export. Token mode only loads your package when your token is valid.</div>
@@ -456,7 +456,7 @@
 
       <div class="student-banner card">
         <div>Viewing data for <strong id="activeStudentLabel">Unknown student</strong></div>
-        <button id="renderBtn" type="button">Render Charts</button>
+        <button id="changeStudentBtn" type="button">Change ID</button>
       </div>
 
       <div class="controls">
@@ -473,11 +473,19 @@
         <input id="feedbackCsvFile" type="file" accept=".csv" />
       </div>
       <div class="card">
+        <label for="studentFilter">Student Profile</label>
+        <input id="studentFilter" type="text" placeholder="Student ID" readonly />
+      </div>
+      <div class="card">
         <label for="trendViewFilter">Trend View</label>
         <select id="trendViewFilter">
           <option value="timestamp" selected>Normal trend (timestamp order)</option>
           <option value="latest_assignment">Latest run per assignment</option>
         </select>
+      </div>
+      <div class="card">
+        <label>Action</label>
+        <button id="renderBtn">Render Charts</button>
       </div>
     </div>
 
@@ -593,7 +601,7 @@
     </div>
 
     <div class="hint">
-      Tip: Student ID is locked from the first page. Reload this file to change ID.
+      Tip: Type a Student ID to filter.
     </div>
     </div>
   </div>
@@ -605,8 +613,6 @@
     let charts = [];
     let activeStudentId = "";
     let selectedAssignmentCodes = new Set();
-    const TOKEN_BASE_URL_STORAGE_KEY = "ta_student_token_base_url";
-    let tokenBaseUrl = "";
 
     const studentGate = document.getElementById("studentGate");
     const dashboardShell = document.getElementById("dashboardShell");
@@ -615,10 +621,13 @@
     const tokenEntry = document.getElementById("tokenEntry");
     const loadByTokenBtn = document.getElementById("loadByTokenBtn");
     const tokenLoadStatus = document.getElementById("tokenLoadStatus");
+    const TOKEN_PACKAGE_BASE_URL = "https://veeppnsk.github.io/ta-student-dashboard/split_students_20260617_161619/token_packages";
+    const changeStudentBtn = document.getElementById("changeStudentBtn");
     const activeStudentLabel = document.getElementById("activeStudentLabel");
     const csvFile = document.getElementById("csvFile");
     const issuesCsvFile = document.getElementById("issuesCsvFile");
     const feedbackCsvFile = document.getElementById("feedbackCsvFile");
+    const studentFilter = document.getElementById("studentFilter");
     const assignmentScoreCards = document.getElementById("assignmentScoreCards");
     const feedbackStatusText = document.getElementById("feedbackStatusText");
     const feedbackTableBody = document.getElementById("feedbackTableBody");
@@ -647,6 +656,7 @@
     function setActiveStudent(studentId) {
       const normalized = normalizeText(studentId);
       activeStudentId = normalized;
+      studentFilter.value = normalized;
       activeStudentLabel.textContent = normalized || "Unknown student";
       selectedAssignmentCodes = new Set();
     }
@@ -655,6 +665,13 @@
       setActiveStudent(studentId);
       studentGate.classList.add("dashboard-hidden");
       dashboardShell.classList.remove("dashboard-hidden");
+    }
+
+    function closeDashboard() {
+      dashboardShell.classList.add("dashboard-hidden");
+      studentGate.classList.remove("dashboard-hidden");
+      studentIdEntry.value = activeStudentId;
+      studentIdEntry.focus();
     }
 
     function setTokenStatus(message, isError) {
@@ -676,108 +693,6 @@
 
     function resolveUrl(baseUrl, relativePath) {
       return new URL(relativePath, baseUrl).toString();
-    }
-
-    function readStoredTokenBaseUrl() {
-      try {
-        const stored = window.localStorage.getItem(TOKEN_BASE_URL_STORAGE_KEY);
-        return normalizeText(stored);
-      } catch (error) {
-        return "";
-      }
-    }
-
-    function saveStoredTokenBaseUrl(baseUrl) {
-      const normalized = ensureTrailingSlash(baseUrl);
-      if (!normalized) return;
-      try {
-        window.localStorage.setItem(TOKEN_BASE_URL_STORAGE_KEY, normalized);
-      } catch (error) {
-        // Ignore storage errors (private mode / blocked storage).
-      }
-    }
-
-    function uniqueUrls(urls) {
-      const seen = new Set();
-      const result = [];
-      for (const url of urls || []) {
-        const normalized = ensureTrailingSlash(url);
-        if (!normalized || seen.has(normalized)) continue;
-        seen.add(normalized);
-        result.push(normalized);
-      }
-      return result;
-    }
-
-    function buildTokenBaseCandidatesFromDirectoryHtml(htmlText, currentDirUrl) {
-      const html = String(htmlText || "");
-      const candidates = [];
-
-      const tokenPackagesRegex = /href=["']([^"']*split_students_[^"']*\/token_packages\/?)["']/ig;
-      let match = tokenPackagesRegex.exec(html);
-      while (match) {
-        try {
-          candidates.push(new URL(match[1], currentDirUrl).toString());
-        } catch (error) {
-          // Ignore malformed URLs in listing.
-        }
-        match = tokenPackagesRegex.exec(html);
-      }
-
-      const splitFolderRegex = /href=["']([^"']*split_students_[^"'\/]*)\/?["']/ig;
-      match = splitFolderRegex.exec(html);
-      while (match) {
-        try {
-          const splitFolderUrl = new URL(match[1] + "/", currentDirUrl).toString();
-          candidates.push(new URL("token_packages/", splitFolderUrl).toString());
-        } catch (error) {
-          // Ignore malformed URLs in listing.
-        }
-        match = splitFolderRegex.exec(html);
-      }
-
-      return candidates;
-    }
-
-    async function discoverTokenBaseUrl(token) {
-      const normalizedToken = normalizeText(token);
-      if (!normalizedToken) return "";
-
-      const currentDirUrl = new URL("./", window.location.href).toString();
-      const candidates = [];
-
-      if (tokenBaseUrl) candidates.push(tokenBaseUrl);
-      const storedBase = readStoredTokenBaseUrl();
-      if (storedBase) candidates.push(storedBase);
-      candidates.push(new URL("token_packages/", currentDirUrl).toString());
-
-      try {
-        const listingResponse = await fetch(currentDirUrl, { cache: "no-store" });
-        if (listingResponse.ok) {
-          const listingHtml = await listingResponse.text();
-          const discovered = buildTokenBaseCandidatesFromDirectoryHtml(listingHtml, currentDirUrl);
-          discovered.sort((a, b) => b.localeCompare(a, undefined, { numeric: true, sensitivity: "base" }));
-          candidates.push.apply(candidates, discovered);
-        }
-      } catch (error) {
-        // Directory listing may be disabled. Candidate list still has sensible defaults.
-      }
-
-      for (const baseCandidate of uniqueUrls(candidates)) {
-        const manifestUrl = buildManifestUrl(baseCandidate, normalizedToken);
-        try {
-          const response = await fetch(manifestUrl, { cache: "no-store" });
-          if (response.ok) {
-            tokenBaseUrl = baseCandidate;
-            saveStoredTokenBaseUrl(baseCandidate);
-            return baseCandidate;
-          }
-        } catch (error) {
-          // Try next candidate.
-        }
-      }
-
-      return "";
     }
 
     function parseCsvText(text, parseRow) {
@@ -809,26 +724,11 @@
     async function loadTokenPackage() {
       const token = normalizeText(tokenEntry && tokenEntry.value);
       if (!token) {
-        setTokenStatus("Token mode requires an access token.", true);
+        setTokenStatus("Please enter an access token.", true);
         return;
       }
 
-      if (!normalizeText(tokenBaseUrl)) {
-        tokenBaseUrl = readStoredTokenBaseUrl();
-      }
-
-      let baseUrl = normalizeText(tokenBaseUrl);
-      if (!baseUrl) {
-        setTokenStatus("Finding token package location...", false);
-        baseUrl = await discoverTokenBaseUrl(token);
-      }
-
-      if (!baseUrl) {
-        setTokenStatus("Could not find token package location automatically. Open using the full shared link (with token and base).", true);
-        return;
-      }
-
-      const manifestUrl = buildManifestUrl(baseUrl, token);
+      const manifestUrl = buildManifestUrl(TOKEN_PACKAGE_BASE_URL, token);
       setTokenStatus("Loading token package...", false);
 
       try {
@@ -868,9 +768,6 @@
           setActiveStudent(manifestStudent);
         }
 
-        tokenBaseUrl = baseUrl;
-        saveStoredTokenBaseUrl(baseUrl);
-
         openDashboard(manifestStudent || token);
         renderAll();
         setTokenStatus("Token package loaded successfully.", false);
@@ -890,11 +787,6 @@
     async function tryLoadFromQueryToken() {
       const params = getQueryParams();
       const token = normalizeText(params.get("token"));
-      const baseUrl = normalizeText(params.get("base"));
-      if (baseUrl) {
-        tokenBaseUrl = baseUrl;
-        saveStoredTokenBaseUrl(baseUrl);
-      }
       if (!token) return;
       if (tokenEntry) tokenEntry.value = token;
       await loadTokenPackage();
@@ -1113,7 +1005,7 @@
 
       if (!rows.length) {
         feedbackTableBody.innerHTML = "<tr><td colspan='4' style='color:var(--muted);padding:16px'>No student-assignment rows in current filter.</td></tr>";
-        feedbackStatusText.textContent = "Load Metrics/Issues CSV to see feedback rows for your locked student ID.";
+        feedbackStatusText.textContent = "Load Metrics/Issues CSV and set Student Profile to see feedback rows.";
         return;
       }
 
@@ -1219,7 +1111,7 @@
     }
 
     function getStudentScopedRows(items) {
-      const sid = normalizeText(activeStudentId).toLowerCase();
+      const sid = normalizeText(activeStudentId || studentFilter.value).toLowerCase();
       const rows = excludeTeacherBaselineRows(items);
       return rows.filter(r => {
         if (!sid) return false;
@@ -1333,8 +1225,13 @@
       }
     }
 
+    function updateStudentFilter(rows, issueRows) {
+      const current = normalizeText(studentFilter.value);
+      if (current) setActiveStudent(current);
+    }
+
     function getFilteredRows() {
-      const sid = normalizeText(activeStudentId).toLowerCase();
+      const sid = normalizeText(activeStudentId || studentFilter.value).toLowerCase();
       const rows = excludeTeacherBaselineRows(allRows);
       return rows.filter(r => {
         if (!sid) return false;
@@ -1346,7 +1243,7 @@
     }
 
     function getFilteredIssueRows() {
-      const sid = normalizeText(activeStudentId).toLowerCase();
+      const sid = normalizeText(activeStudentId || studentFilter.value).toLowerCase();
       const rows = excludeTeacherBaselineRows(allIssueRows);
       return rows.filter(r => {
         if (!sid) return false;
@@ -2288,7 +2185,7 @@
     }
 
     function renderAll() {
-      if (!normalizeText(activeStudentId)) {
+      if (!normalizeText(activeStudentId || studentFilter.value)) {
         return;
       }
       const assignmentEntries = updateAssignmentSelection(allRows, allIssueRows);
@@ -2385,6 +2282,7 @@
         skipEmptyLines: true,
         complete: (results) => {
           allRows = (results.data || []).map(parseMetricsRow);
+          updateStudentFilter(allRows, allIssueRows);
           renderAll();
         }
       });
@@ -2398,6 +2296,7 @@
         skipEmptyLines: true,
         complete: (results) => {
           allIssueRows = (results.data || []).map(parseIssueRow);
+          updateStudentFilter(allRows, allIssueRows);
           renderAll();
         }
       });
@@ -2422,6 +2321,8 @@
     });
 
     renderBtn.addEventListener("click", renderAll);
+    studentFilter.addEventListener("input", renderAll);
+    studentFilter.addEventListener("change", renderAll);
     trendViewFilter.addEventListener("change", renderAll);
 
     unlockBtn.addEventListener("click", () => {
@@ -2455,6 +2356,10 @@
         }
       });
     }
+
+    changeStudentBtn.addEventListener("click", () => {
+      closeDashboard();
+    });
 
     enableResizableTables();
     requireStudentId();
