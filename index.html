@@ -2063,7 +2063,7 @@
         ? formatCountForDisplay(Number(parsed.tolerancePct.toFixed(1)))
         : "?";
 
-      const line1 = "<span class=\"issue-detail-label\">ELEMENT COUNT:</span> student=" + escHtml(studentText) + " baseline=" + escHtml(baselineText);
+      const line1 = "<span class=\"issue-detail-label\">ELEMENT COUNT:</span> Your count = " + escHtml(studentText) + ", Baseline count = " + escHtml(baselineText);
 
       let line2Text = "Element count exceeds tolerance threshold. Please review the model for duplicate, unnecessary, or incorrectly placed elements.";
       if (parsed.student === 0 && parsed.baseline > 0) {
