@@ -77,6 +77,32 @@
       margin-top: 6px;
     }
 
+    .method-block {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    .method-title {
+      margin: 0 0 6px;
+      font-size: 16px;
+      letter-spacing: 0.2px;
+    }
+
+    .method-note {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .offline-upload-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin: 8px 0 10px;
+    }
+
     .token-status {
       margin-top: 6px;
       font-size: 12px;
@@ -110,6 +136,14 @@
       width: auto;
       padding: 8px 12px;
       flex: 0 0 auto;
+    }
+
+    .trend-toggle-bar {
+      margin: 14px 0;
+      display: grid;
+      grid-template-columns: minmax(220px, 360px);
+      gap: 8px;
+      align-items: center;
     }
 
     .header {
@@ -426,68 +460,55 @@
   <div class="wrap">
     <div class="gate" id="studentGate">
       <div class="card gate-card">
-        <h1>TA Student Offline Dashboard</h1>
-        <p>Enter your student ID to unlock only your own dashboard data. The charts and tables stay hidden until you confirm your ID.</p>
+        <h1>TA Student Dashboard</h1>
+        <p>Choose offline or online access to load your own dashboard data.</p>
         <div class="gate-actions">
-          <div>
+          <div class="method-block">
+            <h3 class="method-title">Offline Method</h3>
+            <p class="method-note">Enter your ID and upload CSV to view your dashboard.</p>
             <label for="studentIdEntry">Student ID</label>
             <input id="studentIdEntry" type="text" placeholder="Enter your student ID" autocomplete="off" />
+            <div class="offline-upload-grid">
+              <div>
+                <label for="csvFile">Metrics CSV</label>
+                <input id="csvFile" type="file" accept=".csv" />
+              </div>
+              <div>
+                <label for="issuesCsvFile">Issues CSV</label>
+                <input id="issuesCsvFile" type="file" accept=".csv" />
+              </div>
+              <div>
+                <label for="feedbackCsvFile">Feedback CSV</label>
+                <input id="feedbackCsvFile" type="file" accept=".csv" />
+              </div>
+            </div>
+            <button id="unlockBtn">View My Dashboard</button>
           </div>
-          <button id="unlockBtn">View My Dashboard</button>
           <hr style="border:none;border-top:1px solid var(--line);margin:6px 0" />
-          <div class="token-grid">
+          <div class="method-block token-grid">
+            <h3 class="method-title">Online Method</h3>
+            <p class="method-note">Enter your access token to view your dashboard.</p>
             <div>
-              <label for="tokenEntry">Access Token (Optional)</label>
+              <label for="tokenEntry">Access Token</label>
               <input id="tokenEntry" type="text" placeholder="Paste your access token" autocomplete="off" />
             </div>
             <button id="loadByTokenBtn" type="button">Load By Token</button>
             <div id="tokenLoadStatus" class="token-status">Enter your access token to load your data online.</div>
           </div>
         </div>
-        <div class="gate-help">Tip: If the CSV uses names instead of IDs, type the exact student name used in the export. Token mode only loads your package when your token is valid.</div>
+        <div class="gate-help">Tip: If the CSV uses names instead of IDs, type the exact student name used in the export.</div>
       </div>
     </div>
 
     <div id="dashboardShell" class="dashboard-hidden">
       <div class="header">
-        <h1>TA Student Offline Dashboard</h1>
+        <h1>TA Student Dashboard</h1>
         <p>Load your Metrics and Issues V2 CSVs to review your own rule outcomes and issue patterns offline.</p>
       </div>
 
       <div class="student-banner card">
         <div>Viewing data for <strong id="activeStudentLabel">Unknown student</strong></div>
-        <button id="changeStudentBtn" type="button">Change ID</button>
       </div>
-
-      <div class="controls">
-      <div class="card">
-        <label for="csvFile">Metrics CSV</label>
-        <input id="csvFile" type="file" accept=".csv" />
-      </div>
-      <div class="card">
-        <label for="issuesCsvFile">Issues CSV</label>
-        <input id="issuesCsvFile" type="file" accept=".csv" />
-      </div>
-      <div class="card">
-        <label for="feedbackCsvFile">Feedback CSV</label>
-        <input id="feedbackCsvFile" type="file" accept=".csv" />
-      </div>
-      <div class="card">
-        <label for="studentFilter">Student Profile</label>
-        <input id="studentFilter" type="text" placeholder="Student ID" readonly />
-      </div>
-      <div class="card">
-        <label for="trendViewFilter">Trend View</label>
-        <select id="trendViewFilter">
-          <option value="timestamp" selected>Normal trend (timestamp order)</option>
-          <option value="latest_assignment">Latest run per assignment</option>
-        </select>
-      </div>
-      <div class="card">
-        <label>Action</label>
-        <button id="renderBtn">Render Charts</button>
-      </div>
-    </div>
 
     <div class="header" style="margin-top:14px">
       <h2 style="margin:0 0 4px">Assignment Scores</h2>
@@ -518,6 +539,14 @@
           <tr><td colspan="4" style="color:var(--muted);padding:16px">No feedback loaded yet.</td></tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="card trend-toggle-bar">
+      <label for="trendViewFilter">Trend View</label>
+      <select id="trendViewFilter">
+        <option value="timestamp" selected>Normal trend (timestamp order)</option>
+        <option value="latest_assignment">Latest run per assignment</option>
+      </select>
     </div>
 
     <div class="grid">
@@ -601,7 +630,7 @@
     </div>
 
     <div class="hint">
-      Tip: Type a Student ID to filter.
+      Tip: Student ID is locked from the first page. Reload this file to change ID.
     </div>
     </div>
   </div>
@@ -622,16 +651,13 @@
     const loadByTokenBtn = document.getElementById("loadByTokenBtn");
     const tokenLoadStatus = document.getElementById("tokenLoadStatus");
     const TOKEN_PACKAGE_BASE_URL = "https://veeppnsk.github.io/ta-student-dashboard/split_students_20260617_161619/token_packages";
-    const changeStudentBtn = document.getElementById("changeStudentBtn");
     const activeStudentLabel = document.getElementById("activeStudentLabel");
     const csvFile = document.getElementById("csvFile");
     const issuesCsvFile = document.getElementById("issuesCsvFile");
     const feedbackCsvFile = document.getElementById("feedbackCsvFile");
-    const studentFilter = document.getElementById("studentFilter");
     const assignmentScoreCards = document.getElementById("assignmentScoreCards");
     const feedbackStatusText = document.getElementById("feedbackStatusText");
     const feedbackTableBody = document.getElementById("feedbackTableBody");
-    const renderBtn = document.getElementById("renderBtn");
     const trendViewFilter = document.getElementById("trendViewFilter");
     const BANGKOK_TZ = "Asia/Bangkok";
     const bangkokFormatter = new Intl.DateTimeFormat("en-GB", {
@@ -656,7 +682,6 @@
     function setActiveStudent(studentId) {
       const normalized = normalizeText(studentId);
       activeStudentId = normalized;
-      studentFilter.value = normalized;
       activeStudentLabel.textContent = normalized || "Unknown student";
       selectedAssignmentCodes = new Set();
     }
@@ -665,13 +690,6 @@
       setActiveStudent(studentId);
       studentGate.classList.add("dashboard-hidden");
       dashboardShell.classList.remove("dashboard-hidden");
-    }
-
-    function closeDashboard() {
-      dashboardShell.classList.add("dashboard-hidden");
-      studentGate.classList.remove("dashboard-hidden");
-      studentIdEntry.value = activeStudentId;
-      studentIdEntry.focus();
     }
 
     function setTokenStatus(message, isError) {
@@ -1005,7 +1023,7 @@
 
       if (!rows.length) {
         feedbackTableBody.innerHTML = "<tr><td colspan='4' style='color:var(--muted);padding:16px'>No student-assignment rows in current filter.</td></tr>";
-        feedbackStatusText.textContent = "Load Metrics/Issues CSV and set Student Profile to see feedback rows.";
+        feedbackStatusText.textContent = "Load Metrics/Issues CSV to see feedback rows for your locked student ID.";
         return;
       }
 
@@ -1111,7 +1129,7 @@
     }
 
     function getStudentScopedRows(items) {
-      const sid = normalizeText(activeStudentId || studentFilter.value).toLowerCase();
+      const sid = normalizeText(activeStudentId).toLowerCase();
       const rows = excludeTeacherBaselineRows(items);
       return rows.filter(r => {
         if (!sid) return false;
@@ -1225,13 +1243,8 @@
       }
     }
 
-    function updateStudentFilter(rows, issueRows) {
-      const current = normalizeText(studentFilter.value);
-      if (current) setActiveStudent(current);
-    }
-
     function getFilteredRows() {
-      const sid = normalizeText(activeStudentId || studentFilter.value).toLowerCase();
+      const sid = normalizeText(activeStudentId).toLowerCase();
       const rows = excludeTeacherBaselineRows(allRows);
       return rows.filter(r => {
         if (!sid) return false;
@@ -1243,7 +1256,7 @@
     }
 
     function getFilteredIssueRows() {
-      const sid = normalizeText(activeStudentId || studentFilter.value).toLowerCase();
+      const sid = normalizeText(activeStudentId).toLowerCase();
       const rows = excludeTeacherBaselineRows(allIssueRows);
       return rows.filter(r => {
         if (!sid) return false;
@@ -2185,7 +2198,7 @@
     }
 
     function renderAll() {
-      if (!normalizeText(activeStudentId || studentFilter.value)) {
+      if (!normalizeText(activeStudentId)) {
         return;
       }
       const assignmentEntries = updateAssignmentSelection(allRows, allIssueRows);
@@ -2282,7 +2295,6 @@
         skipEmptyLines: true,
         complete: (results) => {
           allRows = (results.data || []).map(parseMetricsRow);
-          updateStudentFilter(allRows, allIssueRows);
           renderAll();
         }
       });
@@ -2296,7 +2308,6 @@
         skipEmptyLines: true,
         complete: (results) => {
           allIssueRows = (results.data || []).map(parseIssueRow);
-          updateStudentFilter(allRows, allIssueRows);
           renderAll();
         }
       });
@@ -2320,9 +2331,6 @@
       });
     });
 
-    renderBtn.addEventListener("click", renderAll);
-    studentFilter.addEventListener("input", renderAll);
-    studentFilter.addEventListener("change", renderAll);
     trendViewFilter.addEventListener("change", renderAll);
 
     unlockBtn.addEventListener("click", () => {
@@ -2356,10 +2364,6 @@
         }
       });
     }
-
-    changeStudentBtn.addEventListener("click", () => {
-      closeDashboard();
-    });
 
     enableResizableTables();
     requireStudentId();
