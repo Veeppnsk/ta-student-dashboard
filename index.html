@@ -605,6 +605,7 @@
     let charts = [];
     let activeStudentId = "";
     let selectedAssignmentCodes = new Set();
+    const TOKEN_BASE_URL_STORAGE_KEY = "ta_student_token_base_url";
     let tokenBaseUrl = "";
 
     const studentGate = document.getElementById("studentGate");
@@ -677,6 +678,108 @@
       return new URL(relativePath, baseUrl).toString();
     }
 
+    function readStoredTokenBaseUrl() {
+      try {
+        const stored = window.localStorage.getItem(TOKEN_BASE_URL_STORAGE_KEY);
+        return normalizeText(stored);
+      } catch (error) {
+        return "";
+      }
+    }
+
+    function saveStoredTokenBaseUrl(baseUrl) {
+      const normalized = ensureTrailingSlash(baseUrl);
+      if (!normalized) return;
+      try {
+        window.localStorage.setItem(TOKEN_BASE_URL_STORAGE_KEY, normalized);
+      } catch (error) {
+        // Ignore storage errors (private mode / blocked storage).
+      }
+    }
+
+    function uniqueUrls(urls) {
+      const seen = new Set();
+      const result = [];
+      for (const url of urls || []) {
+        const normalized = ensureTrailingSlash(url);
+        if (!normalized || seen.has(normalized)) continue;
+        seen.add(normalized);
+        result.push(normalized);
+      }
+      return result;
+    }
+
+    function buildTokenBaseCandidatesFromDirectoryHtml(htmlText, currentDirUrl) {
+      const html = String(htmlText || "");
+      const candidates = [];
+
+      const tokenPackagesRegex = /href=["']([^"']*split_students_[^"']*\/token_packages\/?)["']/ig;
+      let match = tokenPackagesRegex.exec(html);
+      while (match) {
+        try {
+          candidates.push(new URL(match[1], currentDirUrl).toString());
+        } catch (error) {
+          // Ignore malformed URLs in listing.
+        }
+        match = tokenPackagesRegex.exec(html);
+      }
+
+      const splitFolderRegex = /href=["']([^"']*split_students_[^"'\/]*)\/?["']/ig;
+      match = splitFolderRegex.exec(html);
+      while (match) {
+        try {
+          const splitFolderUrl = new URL(match[1] + "/", currentDirUrl).toString();
+          candidates.push(new URL("token_packages/", splitFolderUrl).toString());
+        } catch (error) {
+          // Ignore malformed URLs in listing.
+        }
+        match = splitFolderRegex.exec(html);
+      }
+
+      return candidates;
+    }
+
+    async function discoverTokenBaseUrl(token) {
+      const normalizedToken = normalizeText(token);
+      if (!normalizedToken) return "";
+
+      const currentDirUrl = new URL("./", window.location.href).toString();
+      const candidates = [];
+
+      if (tokenBaseUrl) candidates.push(tokenBaseUrl);
+      const storedBase = readStoredTokenBaseUrl();
+      if (storedBase) candidates.push(storedBase);
+      candidates.push(new URL("token_packages/", currentDirUrl).toString());
+
+      try {
+        const listingResponse = await fetch(currentDirUrl, { cache: "no-store" });
+        if (listingResponse.ok) {
+          const listingHtml = await listingResponse.text();
+          const discovered = buildTokenBaseCandidatesFromDirectoryHtml(listingHtml, currentDirUrl);
+          discovered.sort((a, b) => b.localeCompare(a, undefined, { numeric: true, sensitivity: "base" }));
+          candidates.push.apply(candidates, discovered);
+        }
+      } catch (error) {
+        // Directory listing may be disabled. Candidate list still has sensible defaults.
+      }
+
+      for (const baseCandidate of uniqueUrls(candidates)) {
+        const manifestUrl = buildManifestUrl(baseCandidate, normalizedToken);
+        try {
+          const response = await fetch(manifestUrl, { cache: "no-store" });
+          if (response.ok) {
+            tokenBaseUrl = baseCandidate;
+            saveStoredTokenBaseUrl(baseCandidate);
+            return baseCandidate;
+          }
+        } catch (error) {
+          // Try next candidate.
+        }
+      }
+
+      return "";
+    }
+
     function parseCsvText(text, parseRow) {
       return new Promise((resolve, reject) => {
         Papa.parse(text, {
@@ -704,10 +807,24 @@
     }
 
     async function loadTokenPackage() {
-      const baseUrl = normalizeText(tokenBaseUrl);
       const token = normalizeText(tokenEntry && tokenEntry.value);
-      if (!baseUrl || !token) {
-        setTokenStatus("Token mode requires a valid base URL in the link and an access token.", true);
+      if (!token) {
+        setTokenStatus("Token mode requires an access token.", true);
+        return;
+      }
+
+      if (!normalizeText(tokenBaseUrl)) {
+        tokenBaseUrl = readStoredTokenBaseUrl();
+      }
+
+      let baseUrl = normalizeText(tokenBaseUrl);
+      if (!baseUrl) {
+        setTokenStatus("Finding token package location...", false);
+        baseUrl = await discoverTokenBaseUrl(token);
+      }
+
+      if (!baseUrl) {
+        setTokenStatus("Could not find token package location automatically. Open using the full shared link (with token and base).", true);
         return;
       }
 
@@ -751,6 +868,9 @@
           setActiveStudent(manifestStudent);
         }
 
+        tokenBaseUrl = baseUrl;
+        saveStoredTokenBaseUrl(baseUrl);
+
         openDashboard(manifestStudent || token);
         renderAll();
         setTokenStatus("Token package loaded successfully.", false);
@@ -771,8 +891,11 @@
       const params = getQueryParams();
       const token = normalizeText(params.get("token"));
       const baseUrl = normalizeText(params.get("base"));
-      if (baseUrl) tokenBaseUrl = baseUrl;
-      if (!token || !tokenBaseUrl) return;
+      if (baseUrl) {
+        tokenBaseUrl = baseUrl;
+        saveStoredTokenBaseUrl(baseUrl);
+      }
+      if (!token) return;
       if (tokenEntry) tokenEntry.value = token;
       await loadTokenPackage();
     }
