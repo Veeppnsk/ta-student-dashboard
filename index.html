@@ -567,7 +567,7 @@
 
     <div class="header">
       <h2 style="margin:0 0 4px">Issues Analysis</h2>
-      <p style="margin:0;color:var(--muted)">From BatchCheck_Issues_V2_Report.csv</p>
+      <p style="margin:0;color:var(--muted)">From BatchCheck_Issues_Dashboard.csv</p>
     </div>
 
     <div class="card chart-card" style="margin-top:14px" id="issuesSection">
@@ -1272,27 +1272,53 @@
       }
     }
 
+    function getLatestRunKeyPerAssignment(items) {
+      const bestByAssignment = new Map();
+      for (const row of items || []) {
+        const assignment = getAssignmentCode(row);
+        const runMoment = getRunMoment(row);
+        const runKey = getRunKey(row);
+        const prev = bestByAssignment.get(assignment);
+        if (!prev || runMoment > prev.runMoment || (runMoment === prev.runMoment && runKey > prev.runKey)) {
+          bestByAssignment.set(assignment, { runMoment, runKey });
+        }
+      }
+      return bestByAssignment;
+    }
+
     function getFilteredRows() {
       const sid = normalizeText(activeStudentId).toLowerCase();
       const rows = excludeTeacherBaselineRows(allRows);
-      return rows.filter(r => {
+      const filtered = rows.filter(r => {
         if (!sid) return false;
         const rowId = normalizeText(r.student_id || r.student_name).toLowerCase();
         if (rowId !== sid) return false;
         if (selectedAssignmentCodes.size && !selectedAssignmentCodes.has(getAssignmentCode(r))) return false;
         return true;
       });
+      if (!selectedAssignmentCodes.size) return filtered;
+      const latestKeys = getLatestRunKeyPerAssignment(filtered);
+      return filtered.filter(r => {
+        const best = latestKeys.get(getAssignmentCode(r));
+        return best && getRunKey(r) === best.runKey;
+      });
     }
 
     function getFilteredIssueRows() {
       const sid = normalizeText(activeStudentId).toLowerCase();
       const rows = excludeTeacherBaselineRows(allIssueRows);
-      return rows.filter(r => {
+      const filtered = rows.filter(r => {
         if (!sid) return false;
         const rowId = normalizeText(r.student_id || r.student_name).toLowerCase();
         if (rowId !== sid) return false;
         if (selectedAssignmentCodes.size && !selectedAssignmentCodes.has(getAssignmentCode(r))) return false;
         return true;
+      });
+      if (!selectedAssignmentCodes.size) return filtered;
+      const latestKeys = getLatestRunKeyPerAssignment(filtered);
+      return filtered.filter(r => {
+        const best = latestKeys.get(getAssignmentCode(r));
+        return best && getRunKey(r) === best.runKey;
       });
     }
 
